@@ -178,7 +178,7 @@ func newUI(config Config) *UI {
 	ui := &UI{
 		app:       tview.NewApplication(),
 		mainPages: tview.NewPages(),
-		dataset:   newDataset(config.datasetPath),
+		dataset:   newDataset(),
 		keyMap:    config.keyMap,
 	}
 

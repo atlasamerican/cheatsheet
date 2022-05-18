@@ -1,12 +1,14 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
-	"io/ioutil"
 	"log"
-	"os"
 	"path"
 )
+
+//go:embed data
+var data embed.FS
 
 type Dataset struct {
 	sections []Section
@@ -30,12 +32,12 @@ func (c Command) GetExample() string {
 	return c.Name
 }
 
-func newDataset(dirpath string) *Dataset {
+func newDataset() *Dataset {
 	ds := &Dataset{
 		sections: make([]Section, 0),
 	}
 
-	files, err := os.ReadDir(dirpath)
+	files, err := data.ReadDir("data")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,13 +47,13 @@ func newDataset(dirpath string) *Dataset {
 			continue
 		}
 
-		f, err := ioutil.ReadFile(path.Join(dirpath, file.Name()))
+		f, err := data.ReadFile(path.Join("data", file.Name()))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		var section Section
-		err = json.Unmarshal([]byte(f), &section)
+		err = json.Unmarshal(f, &section)
 		if err != nil {
 			log.Fatal(err)
 		}
