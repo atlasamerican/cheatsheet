@@ -19,7 +19,7 @@ func (w *CommandWidget) handleFocus(state bool) {
 	w.BaseWidget.handleFocus(state)
 }
 
-func (c Command) widget() *CommandWidget {
+func (c Command) widget(root Widget) *CommandWidget {
 	var (
 		flex     = tview.NewFlex().SetDirection(tview.FlexColumn)
 		checkbox = tview.NewCheckbox().
@@ -38,7 +38,7 @@ func (c Command) widget() *CommandWidget {
 	flex.AddItem(examText, 0, 1, false)
 
 	return &CommandWidget{
-		newBaseWidget(c.GetExample(), "command"),
+		newBaseWidget(root, c.GetExample(), "command"),
 		flex,
 		checkbox,
 		c,
@@ -52,17 +52,17 @@ type SectionWidget struct {
 	size int
 }
 
-func (section Section) widget() *SectionWidget {
+func (section Section) widget(root Widget) *SectionWidget {
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
 
 	frame := tview.NewFrame(flex).
 		AddText(section.Name, true, tview.AlignCenter, tcell.ColorWhite)
 
 	size := 0
-	base := newBaseWidget(section.Name, "section")
+	base := newBaseWidget(root, section.Name, "section")
 
 	for _, v := range section.Commands {
-		w := v.widget()
+		w := v.widget(root)
 		w.element = base.widgets.PushBack(w)
 		flex.AddItem(w, 1, 1, false)
 		size += 1
@@ -80,13 +80,12 @@ type PageWidget struct {
 	*BaseWidget
 	*tview.Grid
 	content *tview.Flex
-	pages   *DataPages
 }
 
 func (w *PageWidget) handleFocus(state bool) {
 	w.BaseWidget.handleFocus(state)
 	if state {
-		w.pages.SwitchToPage(w.name)
+		w.root.(*DataPages).SwitchToPage(w.name)
 	}
 }
 
@@ -99,10 +98,9 @@ func newPageWidget(pages *DataPages, num int) *PageWidget {
 	grid.AddItem(flex, 0, 3, 1, 3, 0, 175, true)
 
 	return &PageWidget{
-		newBaseWidget(fmt.Sprintf("Page %d", num), "page"),
+		newBaseWidget(pages, fmt.Sprintf("Page %d", num), "page"),
 		grid,
 		flex,
-		pages,
 	}
 }
 
@@ -114,7 +112,7 @@ type DataPages struct {
 func newDataPages(ds *Dataset, perPage int) *DataPages {
 	var (
 		dp = &DataPages{
-			newBaseWidget("main", "dataPages"),
+			newBaseWidget(nil, "main", "dataPages"),
 			tview.NewPages(),
 		}
 		pageNum = 1
@@ -129,7 +127,7 @@ func newDataPages(ds *Dataset, perPage int) *DataPages {
 			page = newPageWidget(dp, pageNum)
 		}
 
-		w := section.widget()
+		w := section.widget(dp)
 		w.element = page.widgets.PushBack(w)
 		page.content.AddItem(w, w.size+3, 1, false)
 	}

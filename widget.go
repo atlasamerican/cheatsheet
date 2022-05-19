@@ -16,6 +16,7 @@ type BaseWidget struct {
 	widgets *list.List
 	element *list.Element
 	focus   Widget
+	root    Widget
 }
 
 func (w *BaseWidget) getElement() *list.Element {
@@ -74,10 +75,11 @@ func (w *BaseWidget) init() {
 	}
 }
 
-func newBaseWidget(name string, kind string) *BaseWidget {
+func newBaseWidget(root Widget, name string, kind string) *BaseWidget {
 	return &BaseWidget{
 		name:    name,
 		kind:    kind,
 		widgets: list.New(),
+		root:    root,
 	}
 }
