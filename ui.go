@@ -159,8 +159,6 @@ type PageView struct {
 }
 
 func (v *PageView) render(page *TldrPage, width, leftPad int) {
-	v.Clear()
-	v.AddText(page.name, true, tview.AlignCenter, tcell.ColorWhite)
 	text := string(markdown.Render(page.content, width, leftPad))
 	v.view.SetText(tview.TranslateANSI(text))
 }
@@ -172,7 +170,9 @@ func newPageView() *PageView {
 	grid.AddItem(view, 0, 1, 1, 7, 0, 0, true)
 	grid.AddItem(view, 0, 3, 1, 7, 0, 125, true)
 
-	return &PageView{tview.NewFrame(grid), view}
+	frame := tview.NewFrame(grid).SetBorders(2, 0, 0, 0, 0, 0)
+
+	return &PageView{frame, view}
 }
 
 type UI struct {
