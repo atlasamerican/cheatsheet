@@ -167,9 +167,12 @@ func (v *PageView) render(page *TldrPage, width, leftPad int) {
 
 func newPageView() *PageView {
 	view := tview.NewTextView().SetWrap(true).SetDynamicColors(true)
-	frame := tview.NewFrame(view)
 
-	return &PageView{frame, view}
+	grid := tview.NewGrid().SetColumns(-2, -1, -1, -1, -1, -1, -1, -1, -2)
+	grid.AddItem(view, 0, 1, 1, 7, 0, 0, true)
+	grid.AddItem(view, 0, 3, 1, 7, 0, 125, true)
+
+	return &PageView{tview.NewFrame(grid), view}
 }
 
 type UI struct {
@@ -191,7 +194,7 @@ func (ui *UI) viewPage(w *CommandWidget) {
 	}
 	if page != nil {
 		logger.Log("[widget] view %s", page.name)
-		ui.pageView.render(page, 80, 1)
+		ui.pageView.render(page, 80, 0)
 		ui.mainPages.SwitchToPage("View")
 		ui.viewing = true
 	}
