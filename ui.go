@@ -155,16 +155,23 @@ func newDataPages(ui *UI, perPage int) *DataPages {
 
 type PageView struct {
 	*tview.Frame
-	view *tview.TextView
-	page *TldrPage
+	view      *tview.TextView
+	page      *TldrPage
+	firstView bool
 }
 
-func (v *PageView) render(width int) {
+func (v *PageView) setPage(page *TldrPage) {
+	v.page = page
+	v.firstView = true
+}
+
+func (v *PageView) render(width int) bool {
 	if v.page == nil {
-		return
+		return false
 	}
 	text := string(markdown.Render(v.page.content, width, 0))
 	v.view.SetText(tview.TranslateANSI(text))
+	return true
 }
 
 func newPageView() *PageView {
@@ -176,10 +183,13 @@ func newPageView() *PageView {
 
 	frame := tview.NewFrame(grid).SetBorders(2, 0, 0, 0, 0, 0)
 
-	v := &PageView{frame, view, nil}
+	v := &PageView{frame, view, nil, false}
 
 	view.SetDrawFunc(func(_ tcell.Screen, x, y, w, h int) (int, int, int, int) {
-		v.render(w)
+		if v.render(w) && v.firstView {
+			v.firstView = false
+			view.ScrollToBeginning()
+		}
 		return view.GetInnerRect()
 	})
 
@@ -205,7 +215,7 @@ func (ui *UI) viewPage(w *CommandWidget) {
 	}
 	if page != nil {
 		logger.Log("[widget] view %s", page.name)
-		ui.pageView.page = page
+		ui.pageView.setPage(page)
 		ui.mainPages.SwitchToPage("View")
 		ui.viewing = true
 	}
