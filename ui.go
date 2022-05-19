@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 
+	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -17,6 +19,14 @@ type CommandWidget struct {
 func (w *CommandWidget) handleFocus(state bool) {
 	w.checkbox.SetChecked(state)
 	w.BaseWidget.handleFocus(state)
+}
+
+func (w *CommandWidget) handleCommand(cmd string) bool {
+	if cmd == "view" {
+		w.root.(*DataPages).ui.viewPage(w)
+		return true
+	}
+	return false
 }
 
 func (c Command) widget(root Widget) *CommandWidget {
@@ -107,19 +117,21 @@ func newPageWidget(pages *DataPages, num int) *PageWidget {
 type DataPages struct {
 	*BaseWidget
 	*tview.Pages
+	ui *UI
 }
 
-func newDataPages(ds *Dataset, perPage int) *DataPages {
+func newDataPages(ui *UI, perPage int) *DataPages {
 	var (
 		dp = &DataPages{
 			newBaseWidget(nil, "main", "dataPages"),
 			tview.NewPages(),
+			ui,
 		}
 		pageNum = 1
 		page    = newPageWidget(dp, pageNum)
 	)
 
-	for i, section := range ds.sections {
+	for i, section := range ui.dataset.sections {
 		if i > 0 && i%perPage == 0 {
 			page.element = dp.widgets.PushBack(page)
 			dp.AddPage(page.name, page, true, true)
@@ -141,13 +153,53 @@ func newDataPages(ds *Dataset, perPage int) *DataPages {
 	return dp
 }
 
+type PageView struct {
+	*tview.Frame
+	view *tview.TextView
+}
+
+func (v *PageView) render(page *TldrPage, width, leftPad int) {
+	v.Clear()
+	v.AddText(page.name, true, tview.AlignCenter, tcell.ColorWhite)
+	text := string(markdown.Render(page.content, width, leftPad))
+	v.view.SetText(tview.TranslateANSI(text))
+}
+
+func newPageView() *PageView {
+	view := tview.NewTextView().SetWrap(true).SetDynamicColors(true)
+	frame := tview.NewFrame(view)
+
+	return &PageView{frame, view}
+}
+
 type UI struct {
 	app       *tview.Application
 	mainPages *tview.Pages
 	dataPages *DataPages
+	pageView  *PageView
 	dataset   *Dataset
-	modal     bool
+	viewing   bool
 	keyMap    KeyMap
+}
+
+func (ui *UI) viewPage(w *CommandWidget) {
+	page, err := ui.dataset.getPage(w.data)
+	if err != nil {
+		// TODO: Log this to a file in UserLogs
+		log.Println(err)
+		return
+	}
+	if page != nil {
+		logger.Log("[widget] view %s", page.name)
+		ui.pageView.render(page, 80, 1)
+		ui.mainPages.SwitchToPage("View")
+		ui.viewing = true
+	}
+}
+
+func (ui *UI) unviewPage() {
+	ui.mainPages.SwitchToPage("Sections")
+	ui.viewing = false
 }
 
 func (ui *UI) handleKey(key rune) {
@@ -156,18 +208,25 @@ func (ui *UI) handleKey(key rune) {
 		return
 	}
 
-	if ui.modal {
+	if ui.viewing {
+		switch cmd {
+		case "view":
+			ui.unviewPage()
+		}
 		return
 	}
 
 	var (
 		page    = ui.dataPages.focus.(*PageWidget)
 		section = page.focus.(*SectionWidget)
+		command = section.focus.(*CommandWidget)
 	)
 
-	if !section.handleCommand(cmd) {
-		if !page.handleCommand(cmd) {
-			ui.dataPages.handleCommand(cmd)
+	if !command.handleCommand(cmd) {
+		if !section.handleCommand(cmd) {
+			if !page.handleCommand(cmd) {
+				ui.dataPages.handleCommand(cmd)
+			}
 		}
 	}
 }
@@ -176,7 +235,8 @@ func newUI(config Config) *UI {
 	ui := &UI{
 		app:       tview.NewApplication(),
 		mainPages: tview.NewPages(),
-		dataset:   newDataset(),
+		pageView:  newPageView(),
+		dataset:   newDataset(config.appDirs.UserData()),
 		keyMap:    config.keyMap,
 	}
 
@@ -186,8 +246,9 @@ func newUI(config Config) *UI {
 		return ev
 	})
 
-	ui.dataPages = newDataPages(ui.dataset, config.sectionsPerPage)
+	ui.dataPages = newDataPages(ui, config.sectionsPerPage)
 	ui.mainPages.AddPage("Sections", ui.dataPages, true, true)
+	ui.mainPages.AddPage("View", ui.pageView, true, false)
 
 	ui.app.SetRoot(ui.mainPages, true).SetFocus(ui.mainPages)
 

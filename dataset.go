@@ -12,6 +12,7 @@ var data embed.FS
 
 type Dataset struct {
 	sections []Section
+	archive  *TldrArchive
 }
 
 type Command struct {
@@ -32,9 +33,10 @@ func (c Command) GetExample() string {
 	return c.Name
 }
 
-func newDataset() *Dataset {
+func newDataset(archivePath string) *Dataset {
 	ds := &Dataset{
 		sections: make([]Section, 0),
+		archive:  newTldrArchive(archivePath),
 	}
 
 	files, err := data.ReadDir("data")
@@ -61,4 +63,8 @@ func newDataset() *Dataset {
 	}
 
 	return ds
+}
+
+func (ds *Dataset) getPage(c Command) (*TldrPage, error) {
+	return ds.archive.getPage(c.Name)
 }

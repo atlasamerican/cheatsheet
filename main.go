@@ -3,6 +3,8 @@ package main
 import (
 	"cheatsheet/lg"
 	"log"
+
+	"github.com/ProtonMail/go-appdir"
 )
 
 var logger = lg.Logger
@@ -10,12 +12,14 @@ var logger = lg.Logger
 type Config struct {
 	sectionsPerPage int
 	keyMap          KeyMap
+	appDirs         appdir.Dirs
 }
 
 func main() {
 	config := Config{
 		sectionsPerPage: 3,
 		keyMap:          globalKeyMap,
+		appDirs:         appdir.New("cheatsheet"),
 	}
 
 	ui := newUI(config)
