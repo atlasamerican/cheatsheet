@@ -9,4 +9,8 @@ var globalKeyMap = KeyMap{
 	KeyPress{tcell.KeyUp, ' '}:    "prev",
 	KeyPress{tcell.KeyRune, 'l'}:  "view",
 	KeyPress{tcell.KeyEnter, ' '}: "view",
+	KeyPress{tcell.KeyRune, 'J'}:  "nextSection",
+	KeyPress{tcell.KeyRune, 'n'}:  "nextSection",
+	KeyPress{tcell.KeyRune, 'K'}:  "prevSection",
+	KeyPress{tcell.KeyRune, 'p'}:  "prevSection",
 }

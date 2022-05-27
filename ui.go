@@ -99,6 +99,16 @@ func (w *PageWidget) handleFocus(state bool) {
 	}
 }
 
+func (w *PageWidget) handleCommand(cmd string) bool {
+	if cmd == "nextSection" {
+		cmd = "next"
+	}
+	if cmd == "prevSection" {
+		cmd = "prev"
+	}
+	return w.BaseWidget.handleCommand(cmd)
+}
+
 func newPageWidget(pages *DataPages, num int) *PageWidget {
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
 
