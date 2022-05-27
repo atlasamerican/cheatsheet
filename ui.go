@@ -226,10 +226,10 @@ func (ui *UI) unviewPage() {
 	ui.viewing = false
 }
 
-func (ui *UI) handleKey(key rune) {
-	cmd, ok := ui.keyMap[key]
+func (ui *UI) handleKey(ev *tcell.EventKey) *tcell.EventKey {
+	cmd, ok := ui.keyMap.event2command(ev)
 	if !ok {
-		return
+		return ev
 	}
 
 	if ui.viewing {
@@ -237,7 +237,7 @@ func (ui *UI) handleKey(key rune) {
 		case "view":
 			ui.unviewPage()
 		}
-		return
+		return ev
 	}
 
 	var (
@@ -253,6 +253,8 @@ func (ui *UI) handleKey(key rune) {
 			}
 		}
 	}
+
+	return ev
 }
 
 func newUI(config Config) *UI {
@@ -264,11 +266,7 @@ func newUI(config Config) *UI {
 		keyMap:    config.keyMap,
 	}
 
-	ui.mainPages.SetInputCapture(func(ev *tcell.EventKey) *tcell.EventKey {
-		key := ev.Rune()
-		ui.handleKey(key)
-		return ev
-	})
+	ui.mainPages.SetInputCapture(ui.handleKey)
 
 	ui.dataPages = newDataPages(ui, config.sectionsPerPage)
 	ui.mainPages.AddPage("Sections", ui.dataPages, true, true)

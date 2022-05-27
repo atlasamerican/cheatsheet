@@ -1,9 +1,22 @@
 package main
 
-type KeyMap map[rune]string
+import "github.com/gdamore/tcell/v2"
 
-var globalKeyMap = KeyMap{
-	'j': "next",
-	'k': "prev",
-	'l': "view",
+type KeyPress struct {
+	key tcell.Key
+	ch  rune
+}
+
+type KeyMap map[KeyPress]string
+
+func (km KeyMap) event2command(ev *tcell.EventKey) (string, bool) {
+	key := ev.Key()
+	kp := KeyPress{key, ' '}
+	if key == tcell.KeyRune {
+		kp.ch = ev.Rune()
+	}
+	if cmd, ok := km[kp]; ok {
+		return cmd, true
+	}
+	return "", false
 }
