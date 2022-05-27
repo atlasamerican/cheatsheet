@@ -259,6 +259,8 @@ func (ui *UI) handleKey(ev *tcell.EventKey) *tcell.EventKey {
 	if ui.viewing {
 		switch cmd {
 		case "view":
+			fallthrough
+		case "unview":
 			ui.unviewPage()
 		}
 		return ev
