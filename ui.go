@@ -130,6 +130,16 @@ type DataPages struct {
 	ui *UI
 }
 
+func (w *DataPages) handleCommand(cmd string) bool {
+	if cmd == "nextPage" || cmd == "nextSection" {
+		cmd = "next"
+	}
+	if cmd == "prevPage" || cmd == "prevSection" {
+		cmd = "prev"
+	}
+	return w.BaseWidget.handleCommand(cmd)
+}
+
 func newDataPages(ui *UI, perPage int) *DataPages {
 	var (
 		dp = &DataPages{
