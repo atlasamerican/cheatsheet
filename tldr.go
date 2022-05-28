@@ -34,6 +34,8 @@ type TldrArchive struct {
 	zipPath    string
 	revPath    string
 	lang       string
+	updating   chan bool
+	updateDone chan bool
 }
 
 type TldrPage struct {
@@ -42,7 +44,7 @@ type TldrPage struct {
 }
 
 func newTldrArchive(path string) *TldrArchive {
-	b := &TldrArchive{
+	a := &TldrArchive{
 		remoteUrl:  TldrRemoteUrl,
 		remotePath: TldrRemotePath,
 		statusUrl:  GithubStatusUrl,
@@ -50,17 +52,36 @@ func newTldrArchive(path string) *TldrArchive {
 		zipPath:    filepath.Join(path, "tldr.zip"),
 		revPath:    filepath.Join(path, "rev"),
 		lang:       "en",
+		updating:   make(chan bool, 1),
 	}
-	if b.checkUpdate() {
-		if ok, err := b.update(); err != nil {
-			if !ok {
-				log.Fatal(err)
+
+	a.updating <- true
+
+	go func() {
+		if a.checkUpdate() {
+			if ok, err := a.update(); err != nil {
+				if !ok {
+					log.Fatal(err)
+				}
+				// TODO: Log this to a file in UserLogs
+				log.Println(err)
 			}
-			// TODO: Log this to a file in UserLogs
-			log.Println(err)
 		}
+		a.updating <- false
+	}()
+
+	return a
+}
+
+func (a *TldrArchive) waitForUpdate() {
+	select {
+	case state := <-a.updating:
+		if state {
+			<-a.updating
+		}
+	default:
+		return
 	}
-	return b
 }
 
 func (a *TldrArchive) getRemoteRev() string {
@@ -144,6 +165,8 @@ func (a *TldrArchive) update() (bool, error) {
 }
 
 func (a *TldrArchive) getPage(name string) (*TldrPage, error) {
+	a.waitForUpdate()
+
 	archive, err := zip.OpenReader(a.zipPath)
 	if err != nil {
 		log.Fatal(err)
