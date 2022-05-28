@@ -35,7 +35,6 @@ type TldrArchive struct {
 	revPath    string
 	lang       string
 	updating   chan bool
-	updateDone chan bool
 }
 
 type TldrPage struct {
