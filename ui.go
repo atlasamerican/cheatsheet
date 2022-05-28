@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/gdamore/tcell/v2"
@@ -229,8 +228,7 @@ type UI struct {
 func (ui *UI) viewPage(w *CommandWidget) {
 	page, err := ui.dataset.getPage(w.data)
 	if err != nil {
-		// TODO: Log this to a file in UserLogs
-		log.Println(err)
+		logger.Log("[error] %v", err)
 		return
 	}
 	if page != nil {

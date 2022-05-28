@@ -9,6 +9,8 @@ import (
 
 var debugLogger = lg.Logger
 
+var logger *Logger
+
 type Config struct {
 	sectionsPerPage int
 	keyMap          KeyMap
@@ -21,6 +23,9 @@ func main() {
 		keyMap:          globalKeyMap,
 		appDirs:         appdir.New("cheatsheet"),
 	}
+
+	logger = newLogger(config.appDirs.UserLogs())
+	defer logger.Close()
 
 	ui := newUI(config)
 
