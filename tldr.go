@@ -65,21 +65,18 @@ func newTldrArchive(path string) *TldrArchive {
 				logger.Log("[error] %v", err)
 			}
 		}
-		a.updating <- false
+		close(a.updating)
 	}()
 
 	return a
 }
 
 func (a *TldrArchive) waitForUpdate() {
-	select {
-	case state := <-a.updating:
-		if state {
-			<-a.updating
-		}
-	default:
+	_, ok := <-a.updating
+	if !ok {
 		return
 	}
+	<-a.updating
 }
 
 func (a *TldrArchive) getRemoteRev() string {
