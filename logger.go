@@ -10,11 +10,15 @@ import (
 type Logger struct {
 	file       *os.File
 	fileLogger *log.Logger
+	queue      chan string
 }
 
 func (lg *Logger) Log(format string, v ...interface{}) {
 	msg := fmt.Sprintf(format, v...)
 	lg.fileLogger.Println(msg)
+	go func() {
+		lg.queue <- msg
+	}()
 }
 
 func (lg *Logger) Close() {
@@ -32,5 +36,6 @@ func newLogger(path string) *Logger {
 	return &Logger{
 		file:       file,
 		fileLogger: log.New(file, "", 0),
+		queue:      make(chan string),
 	}
 }
