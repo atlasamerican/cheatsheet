@@ -18,6 +18,8 @@ type Config struct {
 }
 
 func main() {
+	defer debugLogger.Close()
+
 	config := Config{
 		sectionsPerPage: 3,
 		keyMap:          globalKeyMap,
