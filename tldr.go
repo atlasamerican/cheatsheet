@@ -62,8 +62,7 @@ func newTldrArchive(path string) *TldrArchive {
 				if !ok {
 					log.Fatal(err)
 				}
-				// TODO: Log this to a file in UserLogs
-				log.Println(err)
+				logger.Log("[error] %v", err)
 			}
 		}
 		a.updating <- false
@@ -111,7 +110,7 @@ func (a *TldrArchive) checkStatus() bool {
 
 func (a *TldrArchive) checkUpdate() bool {
 	if !a.checkStatus() {
-		debugLogger.Log("[archive] bad status response; check your internet connection")
+		logger.Log("[error] failed to get archive status; check your internet connection")
 		return false
 	}
 	debugLogger.Log("[archive] checking for updates...")
