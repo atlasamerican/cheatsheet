@@ -14,8 +14,11 @@ import (
 	"runtime"
 )
 
-const TldrRemoteUrl = "https://github.com/tldr-pages/tldr-pages.github.io/"
-const TldrRemotePath = "raw/master/assets/tldr.zip"
+const (
+	TldrRemoteUrl   = "https://github.com/tldr-pages/tldr-pages.github.io/"
+	TldrRemotePath  = "raw/master/assets/tldr.zip"
+	GithubStatusUrl = "https://www.githubstatus.com/api/v2/status.json"
+)
 
 var osMap = map[string]string{
 	"linux":   "linux",
@@ -26,6 +29,7 @@ var osMap = map[string]string{
 type TldrArchive struct {
 	remoteUrl  string
 	remotePath string
+	statusUrl  string
 	path       string
 	zipPath    string
 	revPath    string
@@ -41,6 +45,7 @@ func newTldrArchive(path string) *TldrArchive {
 	b := &TldrArchive{
 		remoteUrl:  TldrRemoteUrl,
 		remotePath: TldrRemotePath,
+		statusUrl:  GithubStatusUrl,
 		path:       path,
 		zipPath:    filepath.Join(path, "tldr.zip"),
 		revPath:    filepath.Join(path, "rev"),
@@ -79,7 +84,16 @@ func (a *TldrArchive) getRev() (string, error) {
 	return string(buf), nil
 }
 
+func (a *TldrArchive) checkStatus() bool {
+	_, err := http.Get(a.statusUrl)
+	return err == nil
+}
+
 func (a *TldrArchive) checkUpdate() bool {
+	if !a.checkStatus() {
+		logger.Log("[archive] bad status response; check your internet connection")
+		return false
+	}
 	logger.Log("[archive] checking for updates...")
 	rev, err := a.getRev()
 	if err != nil || rev != a.getRemoteRev() {
