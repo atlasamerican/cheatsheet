@@ -7,7 +7,7 @@ import (
 	"github.com/ProtonMail/go-appdir"
 )
 
-var logger = lg.Logger
+var debugLogger = lg.Logger
 
 type Config struct {
 	sectionsPerPage int

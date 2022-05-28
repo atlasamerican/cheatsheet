@@ -234,7 +234,7 @@ func (ui *UI) viewPage(w *CommandWidget) {
 		return
 	}
 	if page != nil {
-		logger.Log("[widget] view %s", page.name)
+		debugLogger.Log("[widget] view %s", page.name)
 		ui.pageView.setPage(page)
 		ui.mainPages.SwitchToPage("View")
 		ui.viewing = true

@@ -111,10 +111,10 @@ func (a *TldrArchive) checkStatus() bool {
 
 func (a *TldrArchive) checkUpdate() bool {
 	if !a.checkStatus() {
-		logger.Log("[archive] bad status response; check your internet connection")
+		debugLogger.Log("[archive] bad status response; check your internet connection")
 		return false
 	}
-	logger.Log("[archive] checking for updates...")
+	debugLogger.Log("[archive] checking for updates...")
 	rev, err := a.getRev()
 	if err != nil || rev != a.getRemoteRev() {
 		return true
@@ -123,7 +123,7 @@ func (a *TldrArchive) checkUpdate() bool {
 }
 
 func (a *TldrArchive) update() (bool, error) {
-	logger.Log("[archive] updating %s", a.zipPath)
+	debugLogger.Log("[archive] updating %s", a.zipPath)
 
 	res, err := http.Get(a.remoteUrl + a.remotePath)
 	if err != nil {
