@@ -258,6 +258,7 @@ func (ui *UI) handleKey(ev *tcell.EventKey) *tcell.EventKey {
 
 	if cmd == "quit" {
 		ui.app.Stop()
+		return ev
 	}
 
 	if ui.viewing {
