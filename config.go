@@ -4,6 +4,7 @@ import "github.com/gdamore/tcell/v2"
 
 var globalKeyMap = KeyMap{
 	KeyPress{tcell.KeyRune, 'q'}:       "quit",
+	KeyPress{tcell.KeyRune, 'c'}:       "clear",
 	KeyPress{tcell.KeyRune, 'j'}:       "next",
 	KeyPress{tcell.KeyDown, ' '}:       "next",
 	KeyPress{tcell.KeyRune, 'k'}:       "prev",

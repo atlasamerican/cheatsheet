@@ -217,6 +217,7 @@ func newPageView() *PageView {
 
 type UI struct {
 	app       *tview.Application
+	mainFrame *tview.Frame
 	mainPages *tview.Pages
 	dataPages *DataPages
 	pageView  *PageView
@@ -247,6 +248,11 @@ func (ui *UI) unviewPage() {
 func (ui *UI) handleKey(ev *tcell.EventKey) *tcell.EventKey {
 	cmd, ok := ui.keyMap.event2command(ev)
 	if !ok {
+		return ev
+	}
+
+	if cmd == "clear" {
+		ui.mainFrame.Clear()
 		return ev
 	}
 
@@ -292,11 +298,19 @@ func newUI(config Config) *UI {
 
 	ui.mainPages.SetInputCapture(ui.handleKey)
 
+	ui.mainFrame = tview.NewFrame(ui.mainPages)
+
 	ui.dataPages = newDataPages(ui, config.sectionsPerPage)
 	ui.mainPages.AddPage("Sections", ui.dataPages, true, true)
 	ui.mainPages.AddPage("View", ui.pageView, true, false)
 
-	ui.app.SetRoot(ui.mainPages, true).SetFocus(ui.mainPages)
+	ui.app.SetRoot(ui.mainFrame, true).SetFocus(ui.mainPages)
+
+	go func() {
+		for msg := range logger.queue {
+			ui.mainFrame.AddText(tview.Escape(msg), false, tview.AlignLeft, tcell.ColorRed)
+		}
+	}()
 
 	return ui
 }
