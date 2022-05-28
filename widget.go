@@ -24,7 +24,7 @@ func (w *BaseWidget) getElement() *list.Element {
 }
 
 func (w *BaseWidget) handleFocus(state bool) {
-	logger.Log("[widget] focus %t: %s", state, w.name)
+	debugLogger.Log("[widget] focus %t: %s", state, w.name)
 	if w.focus != nil {
 		w.focus.handleFocus(state)
 	}
@@ -64,7 +64,7 @@ func (w *BaseWidget) handleCommand(cmd string) bool {
 }
 
 func (w *BaseWidget) init() {
-	logger.Log("[widget] init %s: %s", w.kind, w.name)
+	debugLogger.Log("[widget] init %s: %s", w.kind, w.name)
 	front := w.widgets.Front()
 	for e := front; e != nil; e = e.Next() {
 		f := e.Value.(Widget)
