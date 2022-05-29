@@ -360,7 +360,9 @@ func newUI(config Config) *UI {
 
 	go func() {
 		for msg := range logger.queue {
-			ui.showError(msg)
+			ui.app.QueueUpdateDraw(func() {
+				ui.showError(msg)
+			})
 		}
 	}()
 
