@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/gdamore/tcell/v2"
@@ -217,13 +218,18 @@ func newPageView() *PageView {
 
 type UI struct {
 	app       *tview.Application
-	mainFrame *tview.Frame
+	mainFlex  *tview.Flex
 	mainPages *tview.Pages
 	dataPages *DataPages
 	pageView  *PageView
 	dataset   *Dataset
+	footer    *tview.TextView
 	viewing   bool
+	hinting   bool
+	errors    int
 	keyMap    KeyMap
+	hintKey   string
+	hints     string
 }
 
 func (ui *UI) viewPage(w *CommandWidget) {
@@ -245,18 +251,54 @@ func (ui *UI) unviewPage() {
 	ui.viewing = false
 }
 
+func (ui *UI) resetFooter(hintKey bool) {
+	ui.footer.Clear()
+	if hintKey {
+		ui.footer.SetText(ui.hintKey)
+	}
+	ui.hinting = false
+	ui.errors = 0
+}
+
+func (ui *UI) toggleHints() {
+	if ui.hinting {
+		ui.resetFooter(true)
+		return
+	}
+
+	ui.resetFooter(false)
+
+	ui.hinting = true
+	ui.footer.SetText(ui.hints)
+}
+
+func (ui *UI) showError(msg string) {
+	ui.hinting = false
+
+	var text string
+	if ui.errors > 0 {
+		text = ui.footer.GetText(true) + "\n"
+	}
+	ui.footer.Clear()
+
+	ui.footer.SetText("[red]" + text + tview.Escape(msg))
+	ui.errors++
+}
+
 func (ui *UI) handleKey(ev *tcell.EventKey) *tcell.EventKey {
 	cmd, ok := ui.keyMap.event2command(ev)
 	if !ok {
 		return ev
 	}
 
-	if cmd == "clear" {
-		ui.mainFrame.Clear()
+	switch cmd {
+	case "hint":
+		ui.toggleHints()
 		return ev
-	}
-
-	if cmd == "quit" {
+	case "clear":
+		ui.resetFooter(true)
+		return ev
+	case "quit":
 		ui.app.Stop()
 		return ev
 	}
@@ -291,25 +333,34 @@ func (ui *UI) handleKey(ev *tcell.EventKey) *tcell.EventKey {
 func newUI(config Config) *UI {
 	ui := &UI{
 		app:       tview.NewApplication(),
+		mainFlex:  tview.NewFlex().SetDirection(tview.FlexRow),
 		mainPages: tview.NewPages(),
 		pageView:  newPageView(),
 		dataset:   newDataset(config.appDirs.UserData()),
 		keyMap:    config.keyMap,
+		footer: tview.NewTextView().
+			SetDynamicColors(true).SetWrap(true).SetWordWrap(true).
+			SetTextAlign(tview.AlignLeft),
 	}
+
+	ui.hintKey = ui.keyMap.generateHintKey()
+	ui.hints = strings.Join(ui.keyMap.generateHints(), " ")
 
 	ui.mainPages.SetInputCapture(ui.handleKey)
 
-	ui.mainFrame = tview.NewFrame(ui.mainPages)
+	ui.mainFlex.AddItem(ui.mainPages, 0, 6, true)
+	ui.mainFlex.AddItem(ui.footer, 0, 1, false)
 
 	ui.dataPages = newDataPages(ui, config.sectionsPerPage)
 	ui.mainPages.AddPage("Sections", ui.dataPages, true, true)
 	ui.mainPages.AddPage("View", ui.pageView, true, false)
 
-	ui.app.SetRoot(ui.mainFrame, true).SetFocus(ui.mainPages)
+	ui.resetFooter(true)
+	ui.app.SetRoot(ui.mainFlex, true).SetFocus(ui.mainPages)
 
 	go func() {
 		for msg := range logger.queue {
-			ui.mainFrame.AddText(tview.Escape(msg), false, tview.AlignLeft, tcell.ColorRed)
+			ui.showError(msg)
 		}
 	}()
 
