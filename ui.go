@@ -94,9 +94,12 @@ type PageWidget struct {
 
 func (w *PageWidget) handleFocus(state bool) {
 	w.BaseWidget.handleFocus(state)
-	if state {
-		w.root.(*DataPages).SwitchToPage(w.name)
+	if !state {
+		return
 	}
+	dp := w.root.(*DataPages)
+	dp.SwitchToPage(w.name)
+	dp.ui.footer.updatePage(dp)
 }
 
 func (w *PageWidget) handleCommand(cmd string) bool {
@@ -216,6 +219,18 @@ func newPageView() *PageView {
 	return v
 }
 
+type Footer struct {
+	*tview.Flex
+	page *tview.TextView
+	info *tview.TextView
+}
+
+func (f *Footer) updatePage(dp *DataPages) {
+	name, _ := dp.GetFrontPage()
+	f.page.Clear()
+	f.page.SetText(fmt.Sprintf("%s/%d", name, dp.GetPageCount()))
+}
+
 type UI struct {
 	app       *tview.Application
 	mainFlex  *tview.Flex
@@ -223,7 +238,7 @@ type UI struct {
 	dataPages *DataPages
 	pageView  *PageView
 	dataset   *Dataset
-	footer    *tview.TextView
+	footer    *Footer
 	viewing   bool
 	hinting   bool
 	errors    int
@@ -252,9 +267,9 @@ func (ui *UI) unviewPage() {
 }
 
 func (ui *UI) resetFooter(hintKey bool) {
-	ui.footer.Clear()
+	ui.footer.info.Clear()
 	if hintKey {
-		ui.footer.SetText(ui.hintKey)
+		ui.footer.info.SetText(ui.hintKey)
 	}
 	ui.hinting = false
 	ui.errors = 0
@@ -269,7 +284,7 @@ func (ui *UI) toggleHints() {
 	ui.resetFooter(false)
 
 	ui.hinting = true
-	ui.footer.SetText(ui.hints)
+	ui.footer.info.SetText(ui.hints)
 }
 
 func (ui *UI) showError(msg string) {
@@ -277,11 +292,11 @@ func (ui *UI) showError(msg string) {
 
 	var text string
 	if ui.errors > 0 {
-		text = ui.footer.GetText(true) + "\n"
+		text = ui.footer.info.GetText(true) + "\n"
 	}
-	ui.footer.Clear()
+	ui.footer.info.Clear()
 
-	ui.footer.SetText("[red]" + text + tview.Escape(msg))
+	ui.footer.info.SetText("[red]" + text + tview.Escape(msg))
 	ui.errors++
 }
 
@@ -330,6 +345,22 @@ func (ui *UI) handleKey(ev *tcell.EventKey) *tcell.EventKey {
 	return ev
 }
 
+func newFooter() *Footer {
+	f := &Footer{
+		tview.NewFlex().SetDirection(tview.FlexRow),
+		// page
+		tview.NewTextView().SetTextAlign(tview.AlignRight),
+		// info
+		tview.NewTextView().
+			SetDynamicColors(true).SetWrap(true).SetWordWrap(true).
+			SetTextAlign(tview.AlignLeft),
+	}
+	f.AddItem(f.page, 1, 1, false)
+	f.AddItem(f.info, 0, 1, false)
+
+	return f
+}
+
 func newUI(config Config) *UI {
 	ui := &UI{
 		app:       tview.NewApplication(),
@@ -337,10 +368,8 @@ func newUI(config Config) *UI {
 		mainPages: tview.NewPages(),
 		pageView:  newPageView(),
 		dataset:   newDataset(config.appDirs.UserData()),
+		footer:    newFooter(),
 		keyMap:    config.keyMap,
-		footer: tview.NewTextView().
-			SetDynamicColors(true).SetWrap(true).SetWordWrap(true).
-			SetTextAlign(tview.AlignLeft),
 	}
 
 	ui.hintKey = ui.keyMap.generateHintKey()
