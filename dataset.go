@@ -16,14 +16,14 @@ type Dataset struct {
 }
 
 type Command struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Example     string `json:"example"`
+	Name        string `json:"name" jsonschema:"description=Command name--corresponds to tldr page"`
+	Description string `json:"description" jsonschema:"description=Command description"`
+	Example     string `json:"example,omitempty" jsonschema:"description=Command example--defaults to 'name' if omitted"`
 }
 
 type Section struct {
-	Name     string    `json:"section"`
-	Commands []Command `json:"commands"`
+	Name     string    `json:"section" jsonschema:"description=Section name"`
+	Commands []Command `json:"commands" jsonschema:"description=List of commands"`
 }
 
 func (c Command) GetExample() string {
