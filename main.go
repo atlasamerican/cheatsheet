@@ -2,6 +2,8 @@ package main
 
 import (
 	"cheatsheet/lg"
+	"flag"
+	"fmt"
 	"log"
 
 	"github.com/ProtonMail/go-appdir"
@@ -24,6 +26,17 @@ func main() {
 		sectionsPerPage: 3,
 		keyMap:          globalKeyMap,
 		appDirs:         appdir.New("cheatsheet"),
+	}
+
+	update := flag.Bool("update", false, "Update archive")
+	flag.Parse()
+
+	if *update {
+		debugLogger.Overload(func(f string, v ...interface{}) {
+			fmt.Printf(f+"\n", v...)
+		})
+		newTldrArchive(config.appDirs.UserData()).waitForUpdate()
+		return
 	}
 
 	logger = newLogger(config.appDirs.UserLogs())

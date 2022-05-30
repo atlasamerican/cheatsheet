@@ -8,11 +8,16 @@ import (
 )
 
 type DebugLogger struct {
+	*BaseLogger
 	file       *os.File
 	fileLogger *log.Logger
 }
 
 func (lg *DebugLogger) Log(format string, v ...interface{}) {
+	if lg.overloaded != nil {
+		lg.overloaded(format, v...)
+		return
+	}
 	lg.fileLogger.Printf(format, v...)
 }
 
@@ -26,7 +31,8 @@ func init() {
 		log.Fatal(err)
 	}
 	Logger = &DebugLogger{
-		file:       file,
-		fileLogger: log.New(file, "", 0),
+		&BaseLogger{},
+		file,
+		log.New(file, "", 0),
 	}
 }
