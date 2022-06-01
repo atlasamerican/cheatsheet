@@ -1,4 +1,4 @@
-# command-line-cheat-sheet
+# cheatsheet
 
 cheatsheet is a command-line reference manual providing a text-based user
 interface for accessing [tldr][tldr] pages.
@@ -48,9 +48,8 @@ examples.
 See [#1][issue-1] for details and the [JSON schema][json-schema] wiki page for a
 description of the dataset's JSON schema.
 
-[issue-1]: https://github.com/atlasamerican/command-line-cheat-sheet/issues/1
-[json-schema]:
-  https://github.com/atlasamerican/command-line-cheat-sheet/wiki/JSON-schema
+[issue-1]: https://github.com/atlasamerican/cheatsheet/issues/1
+[json-schema]: https://github.com/atlasamerican/cheatsheet/wiki/JSON-schema
 
 ## License
 
