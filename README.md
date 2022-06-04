@@ -26,6 +26,12 @@ Navigate the TUI with these keys:
 | l, Right, PageDown | select the next page                  |
 | h, Left, PageUp    | select the previous page              |
 
+## Packages
+
+- cheatsheet is packaged for the [AUR][aur].
+
+[aur]: https://aur.archlinux.org/packages/cheatsheet-git
+
 ## Building
 
 ### Dependencies
