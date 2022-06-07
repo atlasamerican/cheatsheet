@@ -51,11 +51,15 @@ After building cheatsheet, `make install` can be used to install it.
 cheatsheet is looking for contributors to expand its dataset of commands and
 examples.
 
-See [#1][issue-1] for details and the [JSON schema][json-schema] wiki page for a
-description of the dataset's JSON schema.
+Please familiarize yourself with the general [contribution process][contrib].
+
+See [#1][issue-1] for additional details and the [JSON schema][json-schema] wiki
+page for a description of the dataset's JSON schema.
 
 [issue-1]: https://github.com/atlasamerican/cheatsheet/issues/1
 [json-schema]: https://github.com/atlasamerican/cheatsheet/wiki/JSON-schema
+[contrib]:
+  https://docs.github.com/en/get-started/quickstart/contributing-to-projects
 
 ## License
 
