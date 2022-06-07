@@ -115,10 +115,10 @@ func (w *PageWidget) handleCommand(cmd string) bool {
 func newPageWidget(pages *DataPages, num int) *PageWidget {
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
 
-	grid := tview.NewGrid().SetColumns(-4, -1, -1, -1, -2, -1, -1, -1, -4)
-	grid.AddItem(flex, 0, 1, 1, 7, 0, 0, true)
-	grid.AddItem(flex, 0, 2, 1, 5, 0, 125, true)
-	grid.AddItem(flex, 0, 3, 1, 3, 0, 175, true)
+	grid := tview.NewGrid().SetColumns(-4, -1, -1, -1, -1, -2, -1, -1, -1, -1, -4)
+	grid.AddItem(flex, 0, 1, 1, 9, 0, 0, true)
+	grid.AddItem(flex, 0, 2, 1, 7, 0, 125, true)
+	grid.AddItem(flex, 0, 3, 1, 5, 0, 175, true)
 
 	return &PageWidget{
 		newBaseWidget(pages, fmt.Sprintf("Page %d", num), "page"),
