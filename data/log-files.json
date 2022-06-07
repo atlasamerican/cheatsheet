@@ -1,0 +1,25 @@
+{
+  "section": "Log files",
+  "commands": [
+    {
+      "name": "journalctl",
+      "description": "Show messages from boot",
+      "example": "journalctl -b"
+    },
+    {
+      "name": "journalctl",
+      "description": "Show messages from 20 min ago",
+      "example": "journalctl --since '20 min ago'"
+    },
+    {
+      "name": "journalctl",
+      "description": "Follow new messages",
+      "example": "journalctl -f"
+    },
+    {
+      "name": "journalctl",
+      "description": "Show only error, critical, and alert messages",
+      "example": "journalctl -p err..alert"
+    }
+  ]
+}
