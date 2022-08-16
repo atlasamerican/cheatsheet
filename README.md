@@ -17,12 +17,10 @@ Navigate the TUI with these keys:
 | ?                  | toggle on-screen key hints            |
 | q                  | quit the app                          |
 | c                  | clear errors or hints                 |
-| Enter              | toggle viewing of command's tldr page |
-| Backspace          | close viewed tldr page                |
-| j, Down            | select the next command               |
-| k, Up              | select the previous command           |
-| J, n               | select the next section               |
-| K, p               | select the previous section           |
+| Enter              | view commands or command page         |
+| Backspace          | unview commands or command page       |
+| j, Down            | select the next item                  |
+| k, Up              | select the previous item              |
 | l, Right, PageDown | select the next page                  |
 | h, Left, PageUp    | select the previous page              |
 
@@ -37,7 +35,7 @@ Navigate the TUI with these keys:
 ### Dependencies
 
 - make [*build*]
-- go >= 1.16 [*build*]
+- go >= 1.18 [*build*]
 - git [*runtime*]
 
 Ensure the above build dependencies are satisfied and build with: `make`.

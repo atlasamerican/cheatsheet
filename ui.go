@@ -9,186 +9,50 @@ import (
 	"github.com/rivo/tview"
 )
 
-type CommandWidget struct {
-	*BaseWidget
-	*tview.Flex
-	checkbox *tview.Checkbox
-	data     Command
+const (
+	PAGE_SECTIONS = "Sections"
+	PAGE_COMMANDS = "Commands"
+	PAGE_VIEWER   = "Viewer"
+)
+
+var breakpoints = [...]int{0, 115, 165}
+
+type UI struct {
+	app *tview.Application
+	// root contains router and footer.
+	root *tview.Flex
+	// router displays the appropriate pager or viewer,
+	// one of: section, command, tldr.
+	// Pagers handle displaying their content.
+	router        *tview.Pages
+	page          string
+	footer        *Footer
+	sectionPager  *Pager[Section]
+	commandPager  *Pager[Command]
+	commandPagers map[string]*Pager[Command]
+	maxPerColumn  int
+	viewer        *Viewer
+	dataset       *Dataset
+	hinting       bool
+	errors        int
+	keyMap        KeyMap
+	hintKey       string
+	hints         string
 }
 
-func (w *CommandWidget) handleFocus(state bool) {
-	w.checkbox.SetChecked(state)
-	w.BaseWidget.handleFocus(state)
-}
-
-func (w *CommandWidget) handleCommand(cmd string) bool {
-	if cmd == "view" {
-		w.root.(*DataPages).ui.viewPage(w)
-		return true
-	}
-	return false
-}
-
-func (c Command) widget(root Widget) *CommandWidget {
-	var (
-		flex     = tview.NewFlex().SetDirection(tview.FlexColumn)
-		checkbox = tview.NewCheckbox().
-				SetFieldBackgroundColor(tcell.ColorBlack).
-				SetFieldTextColor(tcell.ColorWhite)
-		descText = tview.NewTextView().
-				SetText(c.Description).
-				SetTextAlign(tview.AlignLeft)
-		examText = tview.NewTextView().
-				SetText(c.GetExample()).
-				SetTextAlign(tview.AlignRight)
-	)
-
-	flex.AddItem(checkbox, 2, 1, false)
-	flex.AddItem(descText, 0, 2, false)
-	flex.AddItem(examText, 0, 1, false)
-
-	return &CommandWidget{
-		newBaseWidget(root, c.GetExample(), "command"),
-		flex,
-		checkbox,
-		c,
-	}
-}
-
-type SectionWidget struct {
-	*BaseWidget
-	*tview.Frame
-	data Section
-	size int
-}
-
-func (section Section) widget(root Widget) *SectionWidget {
-	flex := tview.NewFlex().SetDirection(tview.FlexRow)
-
-	frame := tview.NewFrame(flex).
-		AddText(section.Name, true, tview.AlignCenter, tcell.ColorWhite)
-
-	size := 0
-	base := newBaseWidget(root, section.Name, "section")
-
-	for _, v := range section.Commands {
-		w := v.widget(root)
-		w.element = base.widgets.PushBack(w)
-		flex.AddItem(w, 1, 1, false)
-		size += 1
-	}
-
-	return &SectionWidget{
-		base,
-		frame,
-		section,
-		size,
-	}
-}
-
-type PageWidget struct {
-	*BaseWidget
-	*tview.Grid
-	content *tview.Flex
-}
-
-func (w *PageWidget) handleFocus(state bool) {
-	w.BaseWidget.handleFocus(state)
-	if !state {
-		return
-	}
-	dp := w.root.(*DataPages)
-	dp.SwitchToPage(w.name)
-	dp.ui.footer.updatePage(dp)
-}
-
-func (w *PageWidget) handleCommand(cmd string) bool {
-	if cmd == "nextSection" {
-		cmd = "next"
-	}
-	if cmd == "prevSection" {
-		cmd = "prev"
-	}
-	return w.BaseWidget.handleCommand(cmd)
-}
-
-func newPageWidget(pages *DataPages, num int) *PageWidget {
-	flex := tview.NewFlex().SetDirection(tview.FlexRow)
-
-	grid := tview.NewGrid().SetColumns(-4, -1, -1, -1, -1, -2, -1, -1, -1, -1, -4)
-	grid.AddItem(flex, 0, 1, 1, 9, 0, 0, true)
-	grid.AddItem(flex, 0, 2, 1, 7, 0, 125, true)
-	grid.AddItem(flex, 0, 3, 1, 5, 0, 175, true)
-
-	return &PageWidget{
-		newBaseWidget(pages, fmt.Sprintf("Page %d", num), "page"),
-		grid,
-		flex,
-	}
-}
-
-type DataPages struct {
-	*BaseWidget
-	*tview.Pages
-	ui *UI
-}
-
-func (w *DataPages) handleCommand(cmd string) bool {
-	if cmd == "nextPage" || cmd == "nextSection" {
-		cmd = "next"
-	}
-	if cmd == "prevPage" || cmd == "prevSection" {
-		cmd = "prev"
-	}
-	return w.BaseWidget.handleCommand(cmd)
-}
-
-func newDataPages(ui *UI, perPage int) *DataPages {
-	var (
-		dp = &DataPages{
-			newBaseWidget(nil, "main", "dataPages"),
-			tview.NewPages(),
-			ui,
-		}
-		pageNum = 1
-		page    = newPageWidget(dp, pageNum)
-	)
-
-	for i, section := range ui.dataset.sections {
-		if i > 0 && i%perPage == 0 {
-			page.element = dp.widgets.PushBack(page)
-			dp.AddPage(page.name, page, true, true)
-			pageNum++
-			page = newPageWidget(dp, pageNum)
-		}
-
-		w := section.widget(dp)
-		w.element = page.widgets.PushBack(w)
-		page.content.AddItem(w, w.size+3, 1, false)
-	}
-
-	page.element = dp.widgets.PushBack(page)
-	dp.AddPage(page.name, page, true, true)
-
-	dp.init()
-	dp.setFocus(dp.widgets.Front())
-
-	return dp
-}
-
-type PageView struct {
+type Viewer struct {
 	*tview.Frame
 	view      *tview.TextView
 	page      *TldrPage
 	firstView bool
 }
 
-func (v *PageView) setPage(page *TldrPage) {
+func (v *Viewer) setPage(page *TldrPage) {
 	v.page = page
 	v.firstView = true
 }
 
-func (v *PageView) render(width int) bool {
+func (v *Viewer) render(width int) bool {
 	if v.page == nil {
 		return false
 	}
@@ -197,16 +61,11 @@ func (v *PageView) render(width int) bool {
 	return true
 }
 
-func newPageView() *PageView {
+func newViewer() *Viewer {
 	view := tview.NewTextView().SetWrap(true).SetDynamicColors(true)
+	frame := tview.NewFrame(view).SetBorders(2, 0, 0, 0, 0, 0)
 
-	grid := tview.NewGrid().SetColumns(-2, -1, -1, -1, -1, -1, -1, -1, -2)
-	grid.AddItem(view, 0, 1, 1, 7, 0, 0, true)
-	grid.AddItem(view, 0, 3, 1, 4, 0, 125, true)
-
-	frame := tview.NewFrame(grid).SetBorders(2, 0, 0, 0, 0, 0)
-
-	v := &PageView{frame, view, nil, false}
+	v := &Viewer{frame, view, nil, false}
 
 	view.SetDrawFunc(func(_ tcell.Screen, x, y, w, h int) (int, int, int, int) {
 		if v.render(w) && v.firstView {
@@ -221,49 +80,55 @@ func newPageView() *PageView {
 
 type Footer struct {
 	*tview.Flex
-	page *tview.TextView
-	info *tview.TextView
+	ui     *UI
+	page   *tview.TextView
+	info   *tview.TextView
+	height int
 }
 
-func (f *Footer) updatePage(dp *DataPages) {
-	name, _ := dp.GetFrontPage()
+func newFooter(ui *UI) *Footer {
+	f := &Footer{
+		tview.NewFlex().SetDirection(tview.FlexRow),
+		ui,
+		// page
+		tview.NewTextView().SetTextAlign(tview.AlignRight),
+		// info
+		tview.NewTextView().
+			SetDynamicColors(true).SetWrap(true).SetWordWrap(true).
+			SetTextAlign(tview.AlignLeft),
+		3,
+	}
+	f.AddItem(f.page, 1, 1, false)
+	f.AddItem(f.info, 0, 1, false)
+
+	// Force redraw when footer page changes.
+	f.page.SetChangedFunc(func() {
+		ui.app.Draw()
+	})
+
+	return f
+}
+
+func (f *Footer) clearPage() {
 	f.page.Clear()
-	f.page.SetText(fmt.Sprintf("%s/%d", name, dp.GetPageCount()))
 }
 
-type UI struct {
-	app       *tview.Application
-	mainFlex  *tview.Flex
-	mainPages *tview.Pages
-	dataPages *DataPages
-	pageView  *PageView
-	dataset   *Dataset
-	footer    *Footer
-	viewing   bool
-	hinting   bool
-	errors    int
-	keyMap    KeyMap
-	hintKey   string
-	hints     string
-}
+func (f *Footer) updatePage(i int, more bool) {
+	debugLogger.Log("[footer] update page: %d, %t", i, more)
 
-func (ui *UI) viewPage(w *CommandWidget) {
-	page, err := ui.dataset.getPage(w.data)
-	if err != nil {
-		logger.Log("[error] %v", err)
-		return
+	var s string
+	if i > 0 {
+		s += "< "
+	} else {
+		s += "  "
 	}
-	if page != nil {
-		debugLogger.Log("[widget] view %s", page.name)
-		ui.pageView.setPage(page)
-		ui.mainPages.SwitchToPage("View")
-		ui.viewing = true
+	s += fmt.Sprintf("Page %d", i+1)
+	if more {
+		s += " >"
+	} else {
+		s += "  "
 	}
-}
-
-func (ui *UI) unviewPage() {
-	ui.mainPages.SwitchToPage("Sections")
-	ui.viewing = false
+	f.page.SetText(s)
 }
 
 func (ui *UI) resetFooter(hintKey bool) {
@@ -273,6 +138,23 @@ func (ui *UI) resetFooter(hintKey bool) {
 	}
 	ui.hinting = false
 	ui.errors = 0
+}
+
+func (ui *UI) viewTldr(c Command) {
+	page, err := ui.dataset.getPage(c)
+	if err != nil {
+		logger.Log("[error] %v", err)
+		return
+	}
+	if page != nil {
+		debugLogger.Log("[widget] view %s", page.name)
+		ui.viewer.setPage(page)
+		ui.router.SwitchToPage(PAGE_VIEWER)
+	}
+}
+
+func (ui *UI) unviewTldr() {
+	ui.router.SwitchToPage(PAGE_COMMANDS)
 }
 
 func (ui *UI) toggleHints() {
@@ -306,6 +188,8 @@ func (ui *UI) handleKey(ev *tcell.EventKey) *tcell.EventKey {
 		return ev
 	}
 
+	debugLogger.Log("[key] command: %s", cmd)
+
 	switch cmd {
 	case "hint":
 		ui.toggleHints()
@@ -318,74 +202,84 @@ func (ui *UI) handleKey(ev *tcell.EventKey) *tcell.EventKey {
 		return ev
 	}
 
-	if ui.viewing {
+	switch ui.page {
+	case PAGE_VIEWER:
 		switch cmd {
 		case "view":
 			fallthrough
 		case "unview":
-			ui.unviewPage()
+			ui.unviewTldr()
 		}
-		return ev
-	}
-
-	var (
-		page    = ui.dataPages.focus.(*PageWidget)
-		section = page.focus.(*SectionWidget)
-		command = section.focus.(*CommandWidget)
-	)
-
-	if !command.handleCommand(cmd) {
-		if !section.handleCommand(cmd) {
-			if !page.handleCommand(cmd) {
-				ui.dataPages.handleCommand(cmd)
-			}
-		}
+	case PAGE_COMMANDS:
+		ui.commandPager.handleCommand(cmd)
+	case PAGE_SECTIONS:
+		ui.sectionPager.handleCommand(cmd)
 	}
 
 	return ev
 }
 
-func newFooter() *Footer {
-	f := &Footer{
-		tview.NewFlex().SetDirection(tview.FlexRow),
-		// page
-		tview.NewTextView().SetTextAlign(tview.AlignRight),
-		// info
-		tview.NewTextView().
-			SetDynamicColors(true).SetWrap(true).SetWordWrap(true).
-			SetTextAlign(tview.AlignLeft),
-	}
-	f.AddItem(f.page, 1, 1, false)
-	f.AddItem(f.info, 0, 1, false)
+func (ui *UI) switchToSectionPager() {
+	ui.router.SwitchToPage(PAGE_SECTIONS)
+}
 
-	return f
+func (ui *UI) switchToCommandPager(s Section) {
+	p, ok := ui.commandPagers[s.Name]
+	if !ok {
+		debugLogger.Log("[ui] creating new CommandPager: %s", s.Name)
+		p = newCommandPager(ui, s)
+		ui.commandPagers[s.Name] = p
+	}
+	ui.commandPager = p
+	ui.router.AddAndSwitchToPage(PAGE_COMMANDS, p, true)
+}
+
+func (ui *UI) routerChanged() {
+	n, _ := ui.router.GetFrontPage()
+	if n == ui.page {
+		return
+	}
+	ui.page = n
+	switch ui.page {
+	case PAGE_VIEWER:
+		ui.footer.clearPage()
+	case PAGE_COMMANDS:
+		ui.commandPager.updatePage()
+	case PAGE_SECTIONS:
+		ui.sectionPager.updatePage()
+	}
 }
 
 func newUI(config Config) *UI {
 	ui := &UI{
-		app:       tview.NewApplication(),
-		mainFlex:  tview.NewFlex().SetDirection(tview.FlexRow),
-		mainPages: tview.NewPages(),
-		pageView:  newPageView(),
-		dataset:   newDataset(config.appDirs.UserData()),
-		footer:    newFooter(),
-		keyMap:    config.keyMap,
+		app:           tview.NewApplication(),
+		root:          tview.NewFlex().SetDirection(tview.FlexRow),
+		router:        tview.NewPages(),
+		dataset:       newDataset(config.appDirs.UserData()),
+		commandPagers: make(map[string]*Pager[Command]),
+		keyMap:        config.keyMap,
+		maxPerColumn:  -1,
 	}
+	ui.footer = newFooter(ui)
+
+	ui.router.SetChangedFunc(ui.routerChanged)
 
 	ui.hintKey = ui.keyMap.generateHintKey()
 	ui.hints = strings.Join(ui.keyMap.generateHints(), " ")
 
-	ui.mainPages.SetInputCapture(ui.handleKey)
+	ui.root.SetInputCapture(ui.handleKey)
 
-	ui.mainFlex.AddItem(ui.mainPages, 0, 6, true)
-	ui.mainFlex.AddItem(ui.footer, 0, 1, false)
+	ui.root.AddItem(ui.router, 0, 6, true)
+	ui.root.AddItem(ui.footer, 0, 1, false)
 
-	ui.dataPages = newDataPages(ui, config.sectionsPerPage)
-	ui.mainPages.AddPage("Sections", ui.dataPages, true, true)
-	ui.mainPages.AddPage("View", ui.pageView, true, false)
+	ui.sectionPager = newSectionPager(ui)
+	ui.viewer = newViewer()
+
+	ui.router.AddPage(PAGE_SECTIONS, ui.sectionPager, true, true)
+	ui.router.AddPage(PAGE_VIEWER, ui.viewer, true, false)
 
 	ui.resetFooter(true)
-	ui.app.SetRoot(ui.mainFlex, true).SetFocus(ui.mainPages)
+	ui.app.SetRoot(ui.root, true)
 
 	go func() {
 		for msg := range logger.queue {

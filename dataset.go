@@ -26,7 +26,7 @@ type Section struct {
 	Commands []Command `json:"commands" jsonschema:"description=List of commands"`
 }
 
-func (c Command) GetExample() string {
+func (c Command) getExample() string {
 	if c.Example != "" {
 		return c.Example
 	}

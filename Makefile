@@ -2,7 +2,7 @@ PREFIX ?= /usr/local
 BINPREFIX ?= $(PREFIX)/bin
 
 SRC = lg/debug.go lg/dummy.go lg/logger.go \
-	config.go dataset.go keys.go ui.go widget.go
+	config.go dataset.go keys.go ui.go
 
 VALIDATOR = node_modules/ajv-cli/dist/index.js
 
