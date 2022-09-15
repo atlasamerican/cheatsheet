@@ -1,0 +1,11 @@
+section: User management
+
+commands:
+  - name: useradd
+    description: Add a user
+
+  - name: passwd
+    description: Change a user's password
+
+  - name: usermod
+    description: Modify a user

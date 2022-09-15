@@ -24,6 +24,12 @@ Navigate the TUI with these keys:
 | l, Right, PageDown | select the next page                  |
 | h, Left, PageUp    | select the previous page              |
 
+
+### Local data
+
+cheatsheet reads local data files from `$XDG_CONFIG_HOME/cheatsheet` or
+`$HOME/.config/cheatsheet` if `$XDG_CONFIG_HOME` is not set.
+
 ## Packages
 
 - cheatsheet is packaged for the [AUR][aur].
@@ -49,13 +55,10 @@ After building cheatsheet, `make install` can be used to install it.
 cheatsheet is looking for contributors to expand its dataset of commands and
 examples.
 
-Please familiarize yourself with the general [contribution process][contrib].
-
-See [#1][issue-1] for additional details and the [JSON schema][json-schema] wiki
-page for a description of the dataset's JSON schema.
+Please familiarize yourself with the general [contribution process][contrib] and
+see [#1][issue-1] for additional details.
 
 [issue-1]: https://github.com/atlasamerican/cheatsheet/issues/1
-[json-schema]: https://github.com/atlasamerican/cheatsheet/wiki/JSON-schema
 [contrib]:
   https://docs.github.com/en/get-started/quickstart/contributing-to-projects
 

@@ -1,0 +1,14 @@
+section: Group management
+
+commands:
+  - name: groups
+    description: Show group membership
+
+  - name: groupadd
+    description: Add a new group
+
+  - name: groupdel
+    description: Delete a group
+
+  - name: gpasswd
+    description: Remove user from a group
