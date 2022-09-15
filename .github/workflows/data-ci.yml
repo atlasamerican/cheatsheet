@@ -1,0 +1,37 @@
+name: Archive data and push to assets branch
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "data/**.yml"
+  workflow_dispatch:
+
+jobs:
+  archive-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Create archive
+        uses: thedoctor0/zip-release@main
+        with:
+          type: "zip"
+          filename: "data.zip"
+          path: "data"
+      - name: Commit archive
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git rev-parse HEAD > rev
+          git checkout assets
+          git add data.zip
+          git commit -m "Update: $(cat rev)"
+      - name: Push archive to assets branch
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: assets
