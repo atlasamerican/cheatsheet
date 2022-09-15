@@ -10,9 +10,8 @@ import (
 )
 
 type Dataset struct {
-	local    []Command
 	sections map[string]Section
-	archive  *TldrArchive
+	tldr     *Archive[TldrPage]
 }
 
 type Command struct {
@@ -48,12 +47,41 @@ func (c Command) isValid(section bool) bool {
 	return section && c.Name != "" && c.Description != ""
 }
 
+func readDataBuf(buf []byte, cmds *[]Command) {
+	data := Datafile{
+		Commands: make([]Command, 0),
+	}
+	var cmd Command
+	var cmdErr error
+
+	dataErr := yaml.Unmarshal(buf, &data)
+	if dataErr != nil {
+		if cmdErr = yaml.Unmarshal(buf, &cmd); cmdErr != nil {
+			log.Fatal(cmdErr)
+		}
+	}
+
+	if len(data.Commands) > 0 {
+		for _, c := range data.Commands {
+			if !c.isValid(false) {
+				continue
+			}
+			if data.Section != nil {
+				c.Section = *data.Section
+			}
+			*cmds = append(*cmds, c)
+		}
+	} else if cmd.isValid(true) {
+		*cmds = append(*cmds, cmd)
+	}
+}
+
 func newDataset(dataPath string, archivePath string) *Dataset {
 	ds := &Dataset{
-		local:    make([]Command, 0),
 		sections: make(map[string]Section),
-		archive:  newTldrArchive(archivePath),
+		tldr:     newTldrArchive(archivePath),
 	}
+	cmds := newDataArchive(archivePath).getCommands()
 
 	files, err := ioutil.ReadDir(dataPath)
 	if err != nil {
@@ -70,36 +98,10 @@ func newDataset(dataPath string, archivePath string) *Dataset {
 			log.Fatal(err)
 		}
 
-		data := Datafile{
-			Commands: make([]Command, 0),
-		}
-		var cmd Command
-		var cmdErr error
-
-		dataErr := yaml.Unmarshal(f, &data)
-		if dataErr != nil {
-			if cmdErr = yaml.Unmarshal(f, &cmd); cmdErr != nil {
-				log.Fatal(cmdErr)
-			}
-		}
-
-		if len(data.Commands) > 0 {
-			for _, c := range data.Commands {
-				if !c.isValid(false) {
-					continue
-				}
-				if data.Section != nil {
-					c.Section = *data.Section
-				}
-				ds.local = append(ds.local, c)
-			}
-		} else if cmd.isValid(true) {
-			ds.local = append(ds.local, cmd)
-		}
-
+		readDataBuf(f, &cmds)
 	}
 
-	for _, cmd := range ds.local {
+	for _, cmd := range cmds {
 		s, ok := ds.sections[cmd.Section]
 		if !ok {
 			s = Section{
@@ -115,5 +117,5 @@ func newDataset(dataPath string, archivePath string) *Dataset {
 }
 
 func (ds *Dataset) getPage(c Command) (*TldrPage, error) {
-	return ds.archive.getPage(c.Name)
+	return ds.tldr.getPage(c.Name)
 }

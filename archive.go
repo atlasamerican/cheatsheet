@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -17,6 +18,8 @@ import (
 const (
 	TldrRemoteUrl   = "https://github.com/tldr-pages/tldr-pages.github.io/"
 	TldrRemotePath  = "raw/master/assets/tldr.zip"
+	DataRemoteUrl   = "https://github.com/atlasamerican/cheatsheet/"
+	DataRemotePath  = "raw/assets/data.zip"
 	GithubStatusUrl = "https://www.githubstatus.com/api/v2/status.json"
 )
 
@@ -26,9 +29,15 @@ var osMap = map[string]string{
 	"windows": "windows",
 }
 
-type TldrArchive struct {
+type TldrPage struct {
+	name    string
+	content string
+}
+
+type Archive[T TldrPage | Dataset] struct {
 	remoteUrl  string
 	remotePath string
+	remoteRef  string
 	statusUrl  string
 	path       string
 	zipPath    string
@@ -37,23 +46,43 @@ type TldrArchive struct {
 	updating   chan bool
 }
 
-type TldrPage struct {
-	name    string
-	content string
-}
-
-func newTldrArchive(path string) *TldrArchive {
-	a := &TldrArchive{
+func newTldrArchive(path string) *Archive[TldrPage] {
+	a := &Archive[TldrPage]{
 		remoteUrl:  TldrRemoteUrl,
 		remotePath: TldrRemotePath,
+		remoteRef:  "HEAD",
 		statusUrl:  GithubStatusUrl,
 		path:       path,
 		zipPath:    filepath.Join(path, "tldr.zip"),
-		revPath:    filepath.Join(path, "rev"),
+		revPath:    filepath.Join(path, "tldr.zip.rev"),
 		lang:       "en",
 		updating:   make(chan bool, 1),
 	}
 
+	a.init()
+
+	return a
+}
+
+func newDataArchive(path string) *Archive[Dataset] {
+	a := &Archive[Dataset]{
+		remoteUrl:  DataRemoteUrl,
+		remotePath: DataRemotePath,
+		remoteRef:  "refs/heads/assets",
+		statusUrl:  GithubStatusUrl,
+		path:       path,
+		zipPath:    filepath.Join(path, "data.zip"),
+		revPath:    filepath.Join(path, "data.zip.rev"),
+		lang:       "en",
+		updating:   make(chan bool, 1),
+	}
+
+	a.init()
+
+	return a
+}
+
+func (a *Archive[T]) init() {
 	a.updating <- true
 
 	go func() {
@@ -67,11 +96,9 @@ func newTldrArchive(path string) *TldrArchive {
 		}
 		close(a.updating)
 	}()
-
-	return a
 }
 
-func (a *TldrArchive) waitForUpdate() {
+func (a *Archive[T]) waitForUpdate() {
 	_, ok := <-a.updating
 	if !ok {
 		return
@@ -79,20 +106,37 @@ func (a *TldrArchive) waitForUpdate() {
 	<-a.updating
 }
 
-func (a *TldrArchive) getRemoteRev() string {
-	out, err := exec.Command("git", "ls-remote", a.remoteUrl, "HEAD").Output()
+func (a *Archive[T]) getRemoteRev() string {
+	cmd := exec.Command("git", "ls-remote", a.remoteUrl)
+	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
 	}
+	if err := cmd.Start(); err != nil {
+		log.Fatal(err)
+	}
+
 	var rev string
-	_, err = fmt.Sscanf(string(out), "%s HEAD", &rev)
-	if err != nil {
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if _, err := fmt.Sscanf(line, "%s "+a.remoteRef, &rev); err == nil {
+			break
+		}
+	}
+
+	if err := cmd.Wait(); err != nil {
 		log.Fatal(err)
 	}
+
+	if rev == "" {
+		log.Fatalf("Failed to get revision for: %s", a.remoteUrl)
+	}
+
 	return rev
 }
 
-func (a *TldrArchive) getRev() (string, error) {
+func (a *Archive[T]) getRev() (string, error) {
 	buf, err := ioutil.ReadFile(a.revPath)
 	if err != nil {
 		return "", err
@@ -100,12 +144,12 @@ func (a *TldrArchive) getRev() (string, error) {
 	return string(buf), nil
 }
 
-func (a *TldrArchive) checkStatus() bool {
+func (a *Archive[T]) checkStatus() bool {
 	_, err := http.Get(a.statusUrl)
 	return err == nil
 }
 
-func (a *TldrArchive) checkUpdate() bool {
+func (a *Archive[T]) checkUpdate() bool {
 	if !a.checkStatus() {
 		logger.Log("[error] failed to get archive status; check your internet connection")
 		return false
@@ -118,7 +162,7 @@ func (a *TldrArchive) checkUpdate() bool {
 	return false
 }
 
-func (a *TldrArchive) update() (bool, error) {
+func (a *Archive[T]) update() (bool, error) {
 	debugLogger.Log("[archive] updating %s", a.zipPath)
 
 	res, err := http.Get(a.remoteUrl + a.remotePath)
@@ -159,7 +203,7 @@ func (a *TldrArchive) update() (bool, error) {
 	return true, nil
 }
 
-func (a *TldrArchive) getPage(name string) (*TldrPage, error) {
+func (a *Archive[T]) getPage(name string) (*TldrPage, error) {
 	a.waitForUpdate()
 
 	archive, err := zip.OpenReader(a.zipPath)
@@ -193,4 +237,32 @@ func (a *TldrArchive) getPage(name string) (*TldrPage, error) {
 		return &TldrPage{name, string(buf)}, nil
 	}
 	return nil, nil
+}
+
+func (a *Archive[T]) getCommands() []Command {
+	a.waitForUpdate()
+
+	cmds := make([]Command, 0)
+
+	archive, err := zip.OpenReader(a.zipPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer archive.Close()
+
+	for _, file := range archive.File {
+		f, err := file.Open()
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		buf, err := ioutil.ReadAll(f)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		readDataBuf(buf, &cmds)
+	}
+
+	return cmds
 }
