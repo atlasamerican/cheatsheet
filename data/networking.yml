@@ -1,0 +1,14 @@
+section: Networking
+
+commands:
+  - name: ip
+    description: Show IP address
+    example: ip address show
+
+  - name: ip
+    description: Show routing table
+    example: ip route show
+
+  - name: ip
+    description: Show IPv6 routes
+    example: ip -6 route

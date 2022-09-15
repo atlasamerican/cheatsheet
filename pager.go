@@ -183,8 +183,10 @@ func newSectionPager(ui *UI) *Pager[Section] {
 		widgets: make([]*ComponentWidget[Section], len(ui.dataset.sections)),
 	}
 
-	for i, d := range ui.dataset.sections {
+	i := 0
+	for _, d := range ui.dataset.sections {
 		r.widgets[i] = d.widget()
+		i++
 	}
 
 	r.init()
