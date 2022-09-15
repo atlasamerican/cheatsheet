@@ -20,7 +20,7 @@ jobs:
         uses: thedoctor0/zip-release@main
         with:
           type: "zip"
-          filename: "data.zip"
+          filename: "data.new.zip"
           path: "data"
       - name: Commit archive
         run: |
@@ -28,6 +28,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git rev-parse HEAD > rev
           git checkout assets
+          mv data.new.zip data.zip
           git add data.zip
           git commit -m "Update: $(cat rev)"
       - name: Push archive to assets branch
