@@ -35,6 +35,7 @@ type TldrPage struct {
 }
 
 type Archive[T TldrPage | Dataset] struct {
+	name       string
 	remoteUrl  string
 	remotePath string
 	remoteRef  string
@@ -48,6 +49,7 @@ type Archive[T TldrPage | Dataset] struct {
 
 func newTldrArchive(path string) *Archive[TldrPage] {
 	a := &Archive[TldrPage]{
+		name:       "tldr",
 		remoteUrl:  TldrRemoteUrl,
 		remotePath: TldrRemotePath,
 		remoteRef:  "HEAD",
@@ -66,6 +68,7 @@ func newTldrArchive(path string) *Archive[TldrPage] {
 
 func newDataArchive(path string) *Archive[Dataset] {
 	a := &Archive[Dataset]{
+		name:       "data",
 		remoteUrl:  DataRemoteUrl,
 		remotePath: DataRemotePath,
 		remoteRef:  "refs/heads/assets",
@@ -86,12 +89,15 @@ func (a *Archive[T]) init() {
 	a.updating <- true
 
 	go func() {
-		if a.checkUpdate() {
+		ok, rev, rrev := a.checkUpdate()
+		if ok {
 			if ok, err := a.update(); err != nil {
 				if !ok {
 					log.Fatal(err)
 				}
-				logger.Log("[error] %v", err)
+				logger.Log("[error] %s: %v", a.name, err)
+			} else {
+				debugLogger.Log("[archive] %s: %s -> %s", a.name, rev, rrev)
 			}
 		}
 		close(a.updating)
@@ -106,7 +112,7 @@ func (a *Archive[T]) waitForUpdate() {
 	<-a.updating
 }
 
-func (a *Archive[T]) getRemoteRev() string {
+func (a *Archive[T]) getRemoteRev() (string, bool) {
 	cmd := exec.Command("git", "ls-remote", a.remoteUrl)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -130,10 +136,12 @@ func (a *Archive[T]) getRemoteRev() string {
 	}
 
 	if rev == "" {
-		log.Fatalf("Failed to get revision for: %s", a.remoteUrl)
+		debugLogger.Log("[archive] %s: failed to get revision", a.name)
+		return rev, false
 	}
 
-	return rev
+	debugLogger.Log("[archive] %s: remote %s", a.name, rev)
+	return rev, true
 }
 
 func (a *Archive[T]) getRev() (string, error) {
@@ -149,17 +157,25 @@ func (a *Archive[T]) checkStatus() bool {
 	return err == nil
 }
 
-func (a *Archive[T]) checkUpdate() bool {
+func (a *Archive[T]) checkUpdate() (bool, string, string) {
 	if !a.checkStatus() {
 		logger.Log("[error] failed to get archive status; check your internet connection")
-		return false
+		return false, "", ""
 	}
 	debugLogger.Log("[archive] checking for updates...")
-	rev, err := a.getRev()
-	if err != nil || rev != a.getRemoteRev() {
-		return true
+	rrev, ok := a.getRemoteRev()
+	if !ok {
+		return true, "n/a", "unknown"
 	}
-	return false
+	rev, err := a.getRev()
+	if err != nil {
+		return true, "unknown", rrev
+	}
+	if rev != rrev {
+		return true, rev, rrev
+	}
+	debugLogger.Log("[archive] %s: up-to-date", a.name)
+	return false, "", ""
 }
 
 func (a *Archive[T]) update() (bool, error) {
@@ -191,9 +207,14 @@ func (a *Archive[T]) update() (bool, error) {
 		return false, err
 	}
 
+	rev, ok := a.getRemoteRev()
+	if !ok {
+		return true, errors.New("failed to get remote revision")
+	}
+
 	err = ioutil.WriteFile(
 		a.revPath,
-		[]byte(a.getRemoteRev()),
+		[]byte(rev),
 		0600,
 	)
 	if err != nil {
