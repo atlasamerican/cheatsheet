@@ -131,12 +131,14 @@ func (f *Footer) updatePage(i int, more bool) {
 	f.page.SetText(s)
 }
 
-func (ui *UI) resetFooter(hintKey bool) {
+func (ui *UI) resetFooter(hinting bool) {
 	ui.footer.info.Clear()
-	if hintKey {
+	if hinting {
+		ui.footer.info.SetText(ui.hints)
+	} else {
 		ui.footer.info.SetText(ui.hintKey)
 	}
-	ui.hinting = false
+	ui.hinting = hinting
 	ui.errors = 0
 }
 
@@ -158,15 +160,7 @@ func (ui *UI) unviewTldr() {
 }
 
 func (ui *UI) toggleHints() {
-	if ui.hinting {
-		ui.resetFooter(true)
-		return
-	}
-
-	ui.resetFooter(false)
-
-	ui.hinting = true
-	ui.footer.info.SetText(ui.hints)
+	ui.resetFooter(!ui.hinting)
 }
 
 func (ui *UI) showError(msg string) {
@@ -259,6 +253,7 @@ func newUI(config Config) *UI {
 		commandPagers: make(map[string]*Pager[Command]),
 		keyMap:        config.keyMap,
 		maxPerColumn:  -1,
+		hinting:       true,
 	}
 	ui.footer = newFooter(ui)
 
