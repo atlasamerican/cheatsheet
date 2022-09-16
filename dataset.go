@@ -168,7 +168,11 @@ func newDataset(dataPath string, archivePath string) *Dataset {
 				log.Fatal(err)
 			}
 
-			readCommandsBuf(f, cmds)
+			if n == "__filters__.yml" {
+				ds.filters = readFiltersBuf(f, ds.filters)
+			} else {
+				cmds = readCommandsBuf(f, cmds)
+			}
 		}
 	}
 
