@@ -33,11 +33,12 @@ type UI struct {
 	maxPerColumn  int
 	viewer        *Viewer
 	dataset       *Dataset
-	hinting       bool
 	errors        int
 	keyMap        KeyMap
 	hintKey       string
 	hints         string
+	fullHints     string
+	fullHinting   bool
 }
 
 type Viewer struct {
@@ -131,14 +132,14 @@ func (f *Footer) updatePage(i int, more bool) {
 	f.page.SetText(s)
 }
 
-func (ui *UI) resetFooter(hinting bool) {
+func (ui *UI) resetFooter(full bool) {
 	ui.footer.info.Clear()
-	if hinting {
-		ui.footer.info.SetText(ui.hints)
+	if full {
+		ui.footer.info.SetText(ui.fullHints)
 	} else {
-		ui.footer.info.SetText(ui.hintKey)
+		ui.footer.info.SetText(ui.hints)
 	}
-	ui.hinting = hinting
+	ui.fullHinting = full
 	ui.errors = 0
 }
 
@@ -160,11 +161,11 @@ func (ui *UI) unviewTldr() {
 }
 
 func (ui *UI) toggleHints() {
-	ui.resetFooter(!ui.hinting)
+	ui.resetFooter(!ui.fullHinting)
 }
 
 func (ui *UI) showError(msg string) {
-	ui.hinting = false
+	ui.fullHinting = false
 
 	var text string
 	if ui.errors > 0 {
@@ -189,7 +190,7 @@ func (ui *UI) handleKey(ev *tcell.EventKey) *tcell.EventKey {
 		ui.toggleHints()
 		return ev
 	case "clear":
-		ui.resetFooter(true)
+		ui.resetFooter(false)
 		return ev
 	case "quit":
 		ui.app.Stop()
@@ -253,14 +254,14 @@ func newUI(config Config) *UI {
 		commandPagers: make(map[string]*Pager[Command]),
 		keyMap:        config.keyMap,
 		maxPerColumn:  -1,
-		hinting:       true,
 	}
 	ui.footer = newFooter(ui)
 
 	ui.router.SetChangedFunc(ui.routerChanged)
 
 	ui.hintKey = ui.keyMap.generateHintKey()
-	ui.hints = strings.Join(ui.keyMap.generateHints(), " ")
+	ui.hints = strings.Join(ui.keyMap.generateHints(0), " ")
+	ui.fullHints = strings.Join(ui.keyMap.generateHints(2), " ")
 
 	ui.root.SetInputCapture(ui.handleKey)
 
@@ -273,7 +274,7 @@ func newUI(config Config) *UI {
 	ui.router.AddPage(PAGE_SECTIONS, ui.sectionPager, true, true)
 	ui.router.AddPage(PAGE_VIEWER, ui.viewer, true, false)
 
-	ui.resetFooter(true)
+	ui.resetFooter(false)
 	ui.app.SetRoot(ui.root, true)
 
 	go func() {

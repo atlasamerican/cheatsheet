@@ -9,22 +9,24 @@ import (
 )
 
 type KeyPress struct {
-	key tcell.Key
-	ch  rune
+	key    tcell.Key
+	ch     rune
+	weight int
 }
 
 type KeyMap map[KeyPress]string
 
 func generateHint(cmd string, kps ...KeyPress) string {
-	keys := make([]string, 0, len(kps))
+	keys := make([]string, len(kps))
 	for _, kp := range kps {
+		var s string
 		if kp.key == tcell.KeyRune {
-			keys = append(keys, string(kp.ch))
+			s = string(kp.ch)
 		} else {
-			keys = append(keys, tcell.KeyNames[kp.key])
+			s = tcell.KeyNames[kp.key]
 		}
+		keys[kp.weight] = s
 	}
-	sort.Strings(keys)
 
 	return fmt.Sprintf("[black:white]%s[-:-] %s", strings.Join(keys, ","), cmd)
 }
@@ -38,11 +40,14 @@ func (km KeyMap) generateHintKey() string {
 	return ""
 }
 
-func (km KeyMap) generateHints() []string {
+func (km KeyMap) generateHints(maxWeight int) []string {
 	order := make([]string, 0)
 	cmds := make(map[string][]KeyPress)
 
 	for kp, cmd := range km {
+		if kp.weight > maxWeight {
+			continue
+		}
 		if kps, ok := cmds[cmd]; ok {
 			cmds[cmd] = append(kps, kp)
 		} else {
@@ -62,13 +67,22 @@ func (km KeyMap) generateHints() []string {
 	return hs
 }
 
+func (km KeyMap) getCommand(kp KeyPress) (string, bool) {
+	for k, cmd := range km {
+		if k.key == kp.key && k.ch == kp.ch {
+			return cmd, true
+		}
+	}
+	return "", false
+}
+
 func (km KeyMap) event2command(ev *tcell.EventKey) (string, bool) {
 	key := ev.Key()
-	kp := KeyPress{key, ' '}
+	kp := KeyPress{key, ' ', -1}
 	if key == tcell.KeyRune {
 		kp.ch = ev.Rune()
 	}
-	if cmd, ok := km[kp]; ok {
+	if cmd, ok := km.getCommand(kp); ok {
 		return cmd, true
 	}
 	return "", false
