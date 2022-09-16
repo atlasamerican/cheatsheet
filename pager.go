@@ -196,7 +196,7 @@ func newSectionPager(ui *UI) *Pager[Section] {
 func newCommandPager(ui *UI, s Section) *Pager[Command] {
 	cols := tview.NewFlex().SetDirection(tview.FlexColumn)
 	r := &Pager[Command]{
-		Frame:   tview.NewFrame(cols).AddText("Commands", true, tview.AlignCenter, tcell.ColorWhite),
+		Frame:   tview.NewFrame(cols).AddText(s.Name, true, tview.AlignCenter, tcell.ColorWhite),
 		name:    PAGER_COMMAND,
 		ui:      ui,
 		columns: cols,
