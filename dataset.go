@@ -40,7 +40,7 @@ type Section struct {
 }
 
 type Datafile struct {
-	Section  *string
+	Command  Command `yaml:",inline"`
 	Commands []Command
 }
 
@@ -110,14 +110,8 @@ func readCommandsBuf(buf []byte, cmds []Command) []Command {
 	data := Datafile{
 		Commands: make([]Command, 0),
 	}
-	var cmd Command
-	var cmdErr error
-
-	dataErr := yaml.Unmarshal(buf, &data)
-	if dataErr != nil {
-		if cmdErr = yaml.Unmarshal(buf, &cmd); cmdErr != nil {
-			log.Fatal(cmdErr)
-		}
+	if err := yaml.Unmarshal(buf, &data); err != nil {
+		log.Fatal(err)
 	}
 
 	if len(data.Commands) > 0 {
@@ -125,13 +119,13 @@ func readCommandsBuf(buf []byte, cmds []Command) []Command {
 			if !c.isValid(false) {
 				continue
 			}
-			if data.Section != nil {
-				c.Section = *data.Section
+			if data.Command.Section != "" {
+				c.Section = data.Command.Section
 			}
 			cmds = append(cmds, c)
 		}
-	} else if cmd.isValid(true) {
-		cmds = append(cmds, cmd)
+	} else if data.Command.isValid(true) {
+		cmds = append(cmds, data.Command)
 	}
 
 	return cmds

@@ -1,0 +1,4 @@
+name: ip
+description: Display the routing table
+example: ip -brief link
+section: Networking
