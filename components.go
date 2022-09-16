@@ -22,16 +22,13 @@ func (c Command) widget() *ComponentWidget[Command] {
 		checkbox = tview.NewCheckbox().
 				SetFieldBackgroundColor(tcell.ColorBlack).
 				SetFieldTextColor(tcell.ColorWhite)
-		name = tview.NewTextView().
-			SetText(c.Name).
-			SetTextAlign(tview.AlignLeft)
 		descText = tview.NewTextView().
-				SetText(c.Description).
-				SetTextAlign(tview.AlignLeft)
+				SetText("[yellow]" + c.Description).
+				SetTextAlign(tview.AlignLeft).SetDynamicColors(true)
 		examText = tview.NewTextView().
 				SetText(c.getExample()).
 				SetTextAlign(tview.AlignLeft)
-		rows = make([]*tview.Flex, 3)
+		rows = make([]*tview.Flex, 2)
 	)
 
 	for i := range rows {
@@ -39,11 +36,9 @@ func (c Command) widget() *ComponentWidget[Command] {
 	}
 
 	rows[0].AddItem(checkbox, 2, 1, false)
-	rows[0].AddItem(name, 0, 2, false)
-	rows[1].AddItem(nil, 2, 1, false)
-	rows[1].AddItem(descText, 0, 2, false)
-	rows[2].AddItem(nil, 2, 1, false)
-	rows[2].AddItem(examText, 0, 2, false)
+	rows[0].AddItem(descText, 0, 2, false)
+	rows[1].AddItem(nil, 4, 1, false)
+	rows[1].AddItem(examText, 0, 2, false)
 
 	for _, r := range rows {
 		flex.AddItem(r, 0, 1, false)
