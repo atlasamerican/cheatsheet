@@ -85,20 +85,20 @@ func newDataset(dataPath string, archivePath string) *Dataset {
 
 	files, err := ioutil.ReadDir(dataPath)
 	if err != nil {
-		log.Fatal(err)
-	}
+		debugLogger.Log("[data] Local data directory not found; skipping")
+	} else {
+		for _, file := range files {
+			if filepath.Ext(file.Name()) != ".yml" || file.IsDir() {
+				continue
+			}
 
-	for _, file := range files {
-		if filepath.Ext(file.Name()) != ".yml" || file.IsDir() {
-			continue
+			f, err := ioutil.ReadFile(path.Join(dataPath, file.Name()))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			readDataBuf(f, &cmds)
 		}
-
-		f, err := ioutil.ReadFile(path.Join(dataPath, file.Name()))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		readDataBuf(f, &cmds)
 	}
 
 	for _, cmd := range cmds {
