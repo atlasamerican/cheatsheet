@@ -63,7 +63,7 @@ func (r *Pager[T]) handleCommand(cmd string) {
 			c := any(r.widgets[r.focus].data).(Command)
 			r.ui.viewTldr(c)
 		}
-	case "unview":
+	case "back":
 		if r.name == PAGER_COMMAND {
 			r.ui.switchToSectionPager()
 		}

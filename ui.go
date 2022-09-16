@@ -207,7 +207,7 @@ func (ui *UI) handleKey(ev *tcell.EventKey) *tcell.EventKey {
 		switch cmd {
 		case "view":
 			fallthrough
-		case "unview":
+		case "back":
 			ui.unviewTldr()
 		}
 	case PAGE_COMMANDS:
