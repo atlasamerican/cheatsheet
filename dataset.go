@@ -1,17 +1,29 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 
 	"gopkg.in/yaml.v3"
 )
 
+const osReleaseFile = "/etc/os-release"
+
+type Filter struct {
+	Os      string
+	Distros []string
+}
+
 type Dataset struct {
 	sections map[string]Section
 	tldr     *Archive[TldrPage]
+	filters  map[string]Filter
 }
 
 type Command struct {
@@ -19,6 +31,7 @@ type Command struct {
 	Description string
 	Example     string
 	Section     string
+	Filters     []string
 }
 
 type Section struct {
@@ -28,7 +41,44 @@ type Section struct {
 
 type Datafile struct {
 	Section  *string
-	Commands []Command `yaml:",flow"`
+	Commands []Command
+}
+
+func readDistroId() (string, bool) {
+	file, err := os.Open(osReleaseFile)
+	if err != nil {
+		return "", false
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	var id string
+	for scanner.Scan() {
+		line := scanner.Text()
+		if _, err := fmt.Sscanf(line, "ID=%s", &id); err == nil {
+			break
+		}
+	}
+	return id, id != ""
+}
+
+func (f Filter) check() bool {
+	if f.Os != "" && f.Os != runtime.GOOS {
+		return false
+	}
+	if len(f.Distros) == 0 {
+		return true
+	}
+	distro, ok := readDistroId()
+	if !ok {
+		logger.Log("[system] Failed to get distro ID")
+		return false
+	}
+	for _, d := range f.Distros {
+		if d == distro {
+			return true
+		}
+	}
+	return false
 }
 
 func (c Command) getExample() string {
@@ -47,7 +97,16 @@ func (c Command) isValid(section bool) bool {
 	return section && c.Name != "" && c.Description != ""
 }
 
-func readDataBuf(buf []byte, cmds *[]Command) {
+func (c Command) checkFilters(fs map[string]Filter) bool {
+	for _, filter := range c.Filters {
+		if f, ok := fs[filter]; ok && !f.check() {
+			return false
+		}
+	}
+	return true
+}
+
+func readCommandsBuf(buf []byte, cmds []Command) []Command {
 	data := Datafile{
 		Commands: make([]Command, 0),
 	}
@@ -69,19 +128,31 @@ func readDataBuf(buf []byte, cmds *[]Command) {
 			if data.Section != nil {
 				c.Section = *data.Section
 			}
-			*cmds = append(*cmds, c)
+			cmds = append(cmds, c)
 		}
 	} else if cmd.isValid(true) {
-		*cmds = append(*cmds, cmd)
+		cmds = append(cmds, cmd)
 	}
+
+	return cmds
+}
+
+func readFiltersBuf(buf []byte, fs map[string]Filter) map[string]Filter {
+	err := yaml.Unmarshal(buf, fs)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return fs
 }
 
 func newDataset(dataPath string, archivePath string) *Dataset {
+	cmds, filters := newDataArchive(archivePath).readData()
+
 	ds := &Dataset{
 		sections: make(map[string]Section),
 		tldr:     newTldrArchive(archivePath),
+		filters:  filters,
 	}
-	cmds := newDataArchive(archivePath).getCommands()
 
 	files, err := ioutil.ReadDir(dataPath)
 	if err != nil {
@@ -97,11 +168,14 @@ func newDataset(dataPath string, archivePath string) *Dataset {
 				log.Fatal(err)
 			}
 
-			readDataBuf(f, &cmds)
+			readCommandsBuf(f, cmds)
 		}
 	}
 
 	for _, cmd := range cmds {
+		if !cmd.checkFilters(ds.filters) {
+			continue
+		}
 		s, ok := ds.sections[cmd.Section]
 		if !ok {
 			s = Section{

@@ -1,0 +1,7 @@
+rpm:
+  os: linux
+  distros: [fedora, almalinux]
+
+pacman:
+  os: linux
+  distros: [arch]

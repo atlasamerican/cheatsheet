@@ -1,0 +1,12 @@
+section: Package management
+
+commands:
+  - name: dnf
+    description: Update the system
+    example: dnf upgrade
+    filters: [rpm]
+
+  - name: pacman
+    description: Update the system
+    example: pacman -Syu
+    filters: [pacman]

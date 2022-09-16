@@ -260,16 +260,17 @@ func (a *Archive[T]) getPage(name string) (*TldrPage, error) {
 	return nil, nil
 }
 
-func (a *Archive[T]) getCommands() []Command {
+func (a *Archive[T]) readData() ([]Command, map[string]Filter) {
 	a.waitForUpdate()
-
-	cmds := make([]Command, 0)
 
 	archive, err := zip.OpenReader(a.zipPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer archive.Close()
+
+	cmds := make([]Command, 0)
+	fs := make(map[string]Filter)
 
 	for _, file := range archive.File {
 		f, err := file.Open()
@@ -282,8 +283,12 @@ func (a *Archive[T]) getCommands() []Command {
 			log.Fatal(err)
 		}
 
-		readDataBuf(buf, &cmds)
+		if file.Name == "data/__filters__.yml" {
+			fs = readFiltersBuf(buf, fs)
+		} else {
+			cmds = readCommandsBuf(buf, cmds)
+		}
 	}
 
-	return cmds
+	return cmds, fs
 }
