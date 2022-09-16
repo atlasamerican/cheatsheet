@@ -250,7 +250,7 @@ func newUI(config Config) *UI {
 		app:           tview.NewApplication(),
 		root:          tview.NewFlex().SetDirection(tview.FlexRow),
 		router:        tview.NewPages(),
-		dataset:       newDataset(config.appDirs.UserConfig(), config.appDirs.UserData()),
+		dataset:       newDataset(config),
 		commandPagers: make(map[string]*Pager[Command]),
 		keyMap:        config.keyMap,
 		maxPerColumn:  -1,

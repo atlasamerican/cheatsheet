@@ -17,6 +17,7 @@ type Config struct {
 	sectionsPerPage int
 	keyMap          KeyMap
 	appDirs         appdir.Dirs
+	dataPath        string
 }
 
 func main() {
@@ -29,6 +30,7 @@ func main() {
 	}
 
 	update := flag.Bool("update", false, "Update archive")
+	flag.StringVar(&config.dataPath, "path", "", "Path to local data")
 	flag.Parse()
 
 	if *update {

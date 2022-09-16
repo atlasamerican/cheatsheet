@@ -145,7 +145,13 @@ func readFiltersBuf(buf []byte, fs map[string]Filter) map[string]Filter {
 	return fs
 }
 
-func newDataset(dataPath string, archivePath string) *Dataset {
+func newDataset(config Config) *Dataset {
+	dataPath := config.dataPath
+	if dataPath == "" {
+		dataPath = config.appDirs.UserConfig()
+	}
+	archivePath := config.appDirs.UserData()
+
 	cmds, filters := newDataArchive(archivePath).readData()
 
 	ds := &Dataset{
@@ -159,11 +165,12 @@ func newDataset(dataPath string, archivePath string) *Dataset {
 		debugLogger.Log("[data] Local data directory not found; skipping")
 	} else {
 		for _, file := range files {
-			if filepath.Ext(file.Name()) != ".yml" || file.IsDir() {
+			n := file.Name()
+			if filepath.Ext(n) != ".yml" || file.IsDir() {
 				continue
 			}
 
-			f, err := ioutil.ReadFile(path.Join(dataPath, file.Name()))
+			f, err := ioutil.ReadFile(path.Join(dataPath, n))
 			if err != nil {
 				log.Fatal(err)
 			}
