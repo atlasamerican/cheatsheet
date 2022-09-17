@@ -1,4 +1,4 @@
-name: Archive data and push to assets branch
+name: Data CI
 
 on:
   push:
