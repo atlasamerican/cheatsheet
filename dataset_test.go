@@ -36,3 +36,27 @@ func TestCommands(t *testing.T) {
 		}
 	}
 }
+
+func TestFilters(t *testing.T) {
+	tests := map[string]Filter{
+		"rpm": {
+			Os:      "linux",
+			Distros: []string{"fedora", "almalinux"},
+		},
+		"pacman": {
+			Os:      "linux",
+			Distros: []string{"arch"},
+		},
+	}
+
+	for filter, attrs := range tests {
+		f, err := ioutil.ReadFile(path.Join(dataPath, "__filters__.yml"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		fs := make(map[string]Filter)
+		fs, err = readFiltersBuf(f, fs)
+		assert.Nil(t, err)
+		assert.Equal(t, attrs, fs[filter])
+	}
+}
