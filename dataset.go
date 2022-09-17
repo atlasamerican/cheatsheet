@@ -14,6 +14,7 @@ import (
 )
 
 const osReleaseFile = "/etc/os-release"
+const filtersFile = "__filters__.yml"
 
 type Filter struct {
 	Os      string
@@ -106,12 +107,12 @@ func (c Command) checkFilters(fs map[string]Filter) bool {
 	return true
 }
 
-func readCommandsBuf(buf []byte, cmds []Command) []Command {
+func readCommandsBuf(buf []byte, cmds []Command) ([]Command, error) {
 	data := Datafile{
 		Commands: make([]Command, 0),
 	}
 	if err := yaml.Unmarshal(buf, &data); err != nil {
-		log.Fatal(err)
+		return cmds, err
 	}
 
 	if len(data.Commands) > 0 {
@@ -128,15 +129,12 @@ func readCommandsBuf(buf []byte, cmds []Command) []Command {
 		cmds = append(cmds, data.Command)
 	}
 
-	return cmds
+	return cmds, nil
 }
 
-func readFiltersBuf(buf []byte, fs map[string]Filter) map[string]Filter {
+func readFiltersBuf(buf []byte, fs map[string]Filter) (map[string]Filter, error) {
 	err := yaml.Unmarshal(buf, fs)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return fs
+	return fs, err
 }
 
 func newDataset(config Config) *Dataset {
@@ -169,10 +167,16 @@ func newDataset(config Config) *Dataset {
 				log.Fatal(err)
 			}
 
-			if n == "__filters__.yml" {
-				ds.filters = readFiltersBuf(f, ds.filters)
+			if n == filtersFile {
+				ds.filters, err = readFiltersBuf(f, ds.filters)
+				if err != nil {
+					log.Fatal(err)
+				}
 			} else {
-				cmds = readCommandsBuf(f, cmds)
+				cmds, err = readCommandsBuf(f, cmds)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 		}
 	}

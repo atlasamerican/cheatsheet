@@ -1,9 +1,9 @@
-name: Validate JSON data
+name: Validate YAML data
 
 on:
   pull_request:
     paths:
-      - "data/**.json"
+      - "data/**.yml"
   workflow_dispatch:
 
 jobs:
@@ -14,13 +14,8 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@v3
         with:
-          go-version: ">=1.16.0"
+          go-version: ">=1.18.0"
           check-latest: true
           cache: true
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: "npm"
       - name: Validate
         run: make validate

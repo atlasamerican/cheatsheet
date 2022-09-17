@@ -4,8 +4,6 @@ BINPREFIX ?= $(PREFIX)/bin
 SRC = lg/debug.go lg/dummy.go lg/logger.go \
 	config.go dataset.go keys.go ui.go
 
-VALIDATOR = node_modules/ajv-cli/dist/index.js
-
 cheatsheet: main.go $(SRC)
 	go build .
 
@@ -23,15 +21,9 @@ clean:
 	rm -f cheatsheet
 	rm -rf node_modules
 
-$(VALIDATOR):
-	npm install ajv-cli
-
-validate: cheatsheet $(VALIDATOR)
- # Replace $schema key with $id in generated schema.
- # This is required for validating with `ajv`.
-	./cheatsheet -schema | sed 's/$$schema/$$id/' > schema.json
-	for data in data/*.json; do \
-		node $(VALIDATOR) -s schema.json -d $$data; \
+validate: cheatsheet
+	@for data in data/*.yml; do \
+		./cheatsheet -validate $$data; \
 	done
 
 .PHONY: debug install uninstall clean validate

@@ -271,6 +271,7 @@ func (a *Archive[T]) readData() ([]Command, map[string]Filter) {
 
 	cmds := make([]Command, 0)
 	fs := make(map[string]Filter)
+	fsFile := filepath.Join("data", filtersFile)
 
 	for _, file := range archive.File {
 		f, err := file.Open()
@@ -283,10 +284,16 @@ func (a *Archive[T]) readData() ([]Command, map[string]Filter) {
 			log.Fatal(err)
 		}
 
-		if file.Name == "data/__filters__.yml" {
-			fs = readFiltersBuf(buf, fs)
+		if file.Name == fsFile {
+			fs, err = readFiltersBuf(buf, fs)
+			if err != nil {
+				log.Fatal(err)
+			}
 		} else {
-			cmds = readCommandsBuf(buf, cmds)
+			cmds, err = readCommandsBuf(buf, cmds)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 

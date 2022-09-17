@@ -28,7 +28,8 @@ func TestCommands(t *testing.T) {
 			t.Fatal(err)
 		}
 		cmds := make([]Command, 0)
-		cmds = readCommandsBuf(f, cmds)
+		cmds, err = readCommandsBuf(f, cmds)
+		assert.Nil(t, err)
 		assert.Equal(t, len(commands), len(cmds))
 		for i, c := range commands {
 			assert.Equal(t, c, cmds[i])
