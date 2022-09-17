@@ -1,5 +1,7 @@
 # cheatsheet
 
+[![Data CI](https://github.com/atlasamerican/cheatsheet/actions/workflows/data-ci.yml/badge.svg)](https://github.com/atlasamerican/cheatsheet/actions/workflows/data-ci.yml)
+
 cheatsheet is a command-line reference manual providing a text-based user
 interface for accessing [tldr][tldr] pages.
 
@@ -14,11 +16,11 @@ Navigate the TUI with these keys:
 
 | keys               | function                              |
 | ------------------ | ------------------------------------- |
-| ?                  | toggle on-screen key hints            |
+| ?                  | toggle full key hints                 |
 | q                  | quit the app                          |
-| c                  | clear errors or hints                 |
+| c                  | clear on-screen errors                |
 | Enter              | view commands or command page         |
-| Backspace          | unview commands or command page       |
+| Backspace          | go back to the previous view          |
 | j, Down            | select the next item                  |
 | k, Up              | select the previous item              |
 | l, Right, PageDown | select the next page                  |
@@ -27,8 +29,16 @@ Navigate the TUI with these keys:
 
 ### Local data
 
+cheatsheet's dataset can be supplemented with local data files in the same
+format.
+
+See [Data schema][schema] for a description of this format and the
+[`data`](data) directory for working examples.
+
 cheatsheet reads local data files from `$XDG_CONFIG_HOME/cheatsheet` or
 `$HOME/.config/cheatsheet` if `$XDG_CONFIG_HOME` is not set.
+
+[schema]: https://github.com/atlasamerican/cheatsheet/wiki/Data-schema
 
 ## Packages
 
