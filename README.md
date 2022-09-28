@@ -3,7 +3,18 @@
 [![Data CI](https://github.com/atlasamerican/cheatsheet/actions/workflows/data-ci.yml/badge.svg)](https://github.com/atlasamerican/cheatsheet/actions/workflows/data-ci.yml)
 
 cheatsheet is a command-line reference manual providing a text-based user
-interface for accessing [tldr][tldr] pages.
+interface for reading [tldr][tldr] pages.
+Its purpose is to make command-line knowledge easy to access.
+
+### :sparkles: cheatsheet is looking for contributors! :sparkles:
+
+It's easy to get started and there are many ways to help cheatsheet grow into a
+useful tool.
+
+See the [contributing guidelines](./contributing.md)!
+
+[contrib-guide]: https://github.com/atlasamerican/cheatsheet/blob/main/contributing.md
+
 
 [tldr]: https://tldr.sh/
 
@@ -59,18 +70,6 @@ Ensure the above build dependencies are satisfied and build with: `make`.
 ### Installing
 
 After building cheatsheet, `make install` can be used to install it.
-
-## Contributing
-
-cheatsheet is looking for contributors to expand its dataset of commands and
-examples.
-
-Please familiarize yourself with the general [contribution process][contrib] and
-see [#1][issue-1] for additional details.
-
-[issue-1]: https://github.com/atlasamerican/cheatsheet/issues/1
-[contrib]:
-  https://docs.github.com/en/get-started/quickstart/contributing-to-projects
 
 ## License
 
