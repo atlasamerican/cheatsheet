@@ -6,6 +6,10 @@ cheatsheet is a command-line reference manual providing a text-based user
 interface for reading [tldr][tldr] pages.
 Its purpose is to make command-line knowledge easy to access.
 
+[<img src="https://github.com/atlasamerican/cheatsheet/blob/images/commands_screenshot.png" width="600"/>][scrn]
+
+[scrn]: https://github.com/atlasamerican/cheatsheet/blob/images/commands_screenshot.png
+
 ### :sparkles: cheatsheet is looking for contributors! :sparkles:
 
 It's easy to get started and there are many ways to help cheatsheet grow into a
