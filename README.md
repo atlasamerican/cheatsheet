@@ -57,9 +57,27 @@ cheatsheet reads local data files from `$XDG_CONFIG_HOME/cheatsheet` or
 
 ## Packages
 
-- cheatsheet is packaged for the [AUR][aur].
+If a package is available for your distro, install it using the instructions below:
 
-[aur]: https://aur.archlinux.org/packages/cheatsheet-git
+* Arch Linux ([AUR][aur], [AUR -git][aur-git])
+
+    ```sh
+    git clone https://aur.archlinux.org/cheatsheet.git
+    cd cheatsheet
+    makepkg -si
+    ```
+
+[aur]: https://aur.archlinux.org/packages/cheatsheet
+[aur-git]: https://aur.archlinux.org/packages/cheatsheet-git
+
+* Fedora ([copr][copr])
+
+    ```sh
+    dnf copr enable jcrd/cheatsheet
+    dnf install cheatsheet
+    ```
+
+[copr]: https://copr.fedorainfracloud.org/coprs/jcrd/cheatsheet/
 
 ## Building
 
