@@ -10,6 +10,11 @@ import yaml
 # pp = pprint.PrettyPrinter(indent=1)
 
 
+translations = {
+    ord('['): None,
+    ord(']'): None,
+}
+
 class IndentDumper(yaml.SafeDumper):
     def ignore_aliases(self, _):
         return True
@@ -30,7 +35,7 @@ def parse_markdown(md):
             text = ""
             for t in text_children:
                 text += t["text"]
-            r["description"] = text.rstrip(":")
+            r["description"] = text.translate(translations).rstrip(":")
         elif obj["type"] == "paragraph":
             r["example"] = obj["children"][0]["text"]
             if "name" in r:
