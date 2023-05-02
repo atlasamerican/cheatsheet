@@ -26,8 +26,11 @@ def parse_markdown(md):
     for obj in md:
         if obj["type"] == "list":
             r["name"] = command
-            r["description"] = obj["children"][0]["children"][0]["children"][0]["text"].rstrip(
-                ":")
+            text_children = obj["children"][0]["children"][0]["children"]
+            text = ""
+            for t in text_children:
+                text += t["text"]
+            r["description"] = text.rstrip(":")
         elif obj["type"] == "paragraph":
             r["example"] = obj["children"][0]["text"]
             if "name" in r:

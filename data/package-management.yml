@@ -19,7 +19,7 @@ commands:
       - rpm
       - linux
   - name: dnf
-    description: 'Install a new package (use '
+    description: Install a new package (use -y to confirm all prompts automatically)
     example: sudo dnf install {{package}}
     filters:
       - rpm
