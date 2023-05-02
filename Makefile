@@ -4,6 +4,12 @@ BINPREFIX ?= $(PREFIX)/bin
 SRC = lg/debug.go lg/dummy.go lg/logger.go \
 	config.go dataset.go keys.go ui.go
 
+define validate
+	@for data in data/*.yml; do \
+		./cheatsheet -validate $$data; \
+	done
+endef
+
 cheatsheet: main.go $(SRC)
 	go build .
 
@@ -22,8 +28,10 @@ clean:
 	rm -rf node_modules
 
 validate: cheatsheet
-	@for data in data/*.yml; do \
-		./cheatsheet -validate $$data; \
-	done
+	$(call validate)
 
-.PHONY: debug install uninstall clean validate
+generate:
+	python generator/tldr.py
+	$(call validate)
+
+.PHONY: debug install uninstall clean validate generate
