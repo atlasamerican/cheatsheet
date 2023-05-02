@@ -1,1 +1,6 @@
 FROM supplantr/golang-toolbox
+
+RUN dnf install -y python
+
+RUN pip install mistune
+RUN pip install pyyaml
