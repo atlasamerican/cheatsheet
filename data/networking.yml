@@ -1,14 +1,42 @@
 section: Networking
-
 commands:
   - name: ip
-    description: Show IP address
-    example: ip address show
-
+    description: List interfaces with detailed info
+    example: ip address
+    filters:
+      - linux
   - name: ip
-    description: Show routing table
-    example: ip route show
-
+    description: List interfaces with brief network layer info
+    example: ip -brief address
+    filters:
+      - linux
   - name: ip
-    description: Show IPv6 routes
-    example: ip -6 route
+    description: List interfaces with brief link layer info
+    example: ip -brief link
+    filters:
+      - linux
+  - name: ip
+    description: Display the routing table
+    example: ip route
+    filters:
+      - linux
+  - name: ip
+    description: Show neighbors (ARP table)
+    example: ip neighbour
+    filters:
+      - linux
+  - name: ip
+    description: Make an interface up/down
+    example: ip link set {{interface}} up/down
+    filters:
+      - linux
+  - name: ip
+    description: Add/Delete an IP address to an interface
+    example: ip addr add/del {{ip}}/{{mask}} dev {{interface}}
+    filters:
+      - linux
+  - name: ip
+    description: Add a default route
+    example: ip route add default via {{ip}} dev {{interface}}
+    filters:
+      - linux

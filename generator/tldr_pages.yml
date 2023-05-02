@@ -1,0 +1,25 @@
+- section: User management
+  pages: 
+    - path: linux/adduser.md
+
+- section: Group management
+  pages:
+    - path: common/groups.md
+    - path: linux/groupadd.md
+    - path: linux/groupdel.md
+    - path: linux/gpasswd.md
+
+- section: Package management
+  pages:
+    - path: linux/dnf.md
+      filters: [rpm]
+    - path: linux/pacman.md
+      filters: [pacman]
+
+- section: Log files
+  pages:
+    - path: linux/journalctl.md
+
+- section: Networking
+  pages:
+    - path: linux/ip.md

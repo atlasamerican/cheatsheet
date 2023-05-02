@@ -1,12 +1,99 @@
 section: Package management
-
 commands:
   - name: dnf
-    description: Update the system
-    example: dnf upgrade
-    filters: [rpm]
-
+    description: Upgrade installed packages to the newest available versions
+    example: sudo dnf upgrade
+    filters:
+      - rpm
+      - linux
+  - name: dnf
+    description: Search packages via keywords
+    example: dnf search {{keywords}}
+    filters:
+      - rpm
+      - linux
+  - name: dnf
+    description: Display details about a package
+    example: dnf info {{package}}
+    filters:
+      - rpm
+      - linux
+  - name: dnf
+    description: 'Install a new package (use '
+    example: sudo dnf install {{package}}
+    filters:
+      - rpm
+      - linux
+  - name: dnf
+    description: Remove a package
+    example: sudo dnf remove {{package}}
+    filters:
+      - rpm
+      - linux
+  - name: dnf
+    description: List installed packages
+    example: dnf list --installed
+    filters:
+      - rpm
+      - linux
+  - name: dnf
+    description: Find which packages provide a given file
+    example: dnf provides {{file}}
+    filters:
+      - rpm
+      - linux
+  - name: dnf
+    description: View all past operations
+    example: dnf history
+    filters:
+      - rpm
+      - linux
   - name: pacman
-    description: Update the system
-    example: pacman -Syu
-    filters: [pacman]
+    description: Synchronize and update all packages
+    example: sudo pacman -Syu
+    filters:
+      - pacman
+      - linux
+  - name: pacman
+    description: Install a new package
+    example: sudo pacman -S {{package_name}}
+    filters:
+      - pacman
+      - linux
+  - name: pacman
+    description: Remove a package and its dependencies
+    example: sudo pacman -Rs {{package_name}}
+    filters:
+      - pacman
+      - linux
+  - name: pacman
+    description: Search the package database for a regular expression or keyword
+    example: pacman -Ss "{{search_pattern}}"
+    filters:
+      - pacman
+      - linux
+  - name: pacman
+    description: List installed packages and versions
+    example: pacman -Q
+    filters:
+      - pacman
+      - linux
+  - name: pacman
+    description: List only the explicitly installed packages and versions
+    example: pacman -Qe
+    filters:
+      - pacman
+      - linux
+  - name: pacman
+    description: List orphan packages (installed as dependencies but not actually
+      required by any package)
+    example: pacman -Qtdq
+    filters:
+      - pacman
+      - linux
+  - name: pacman
+    description: Empty the entire pacman cache
+    example: sudo pacman -Scc
+    filters:
+      - pacman
+      - linux

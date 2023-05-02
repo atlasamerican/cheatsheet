@@ -1,18 +1,44 @@
 section: Log files
-
 commands:
   - name: journalctl
-    description: Show messages from boot
-    example: journalctl -b
-
+    description: 'Show all messages with priority level 3 (errors) from this '
+    example: journalctl -b --priority={{3}}
+    filters:
+      - linux
   - name: journalctl
-    description: Show messages from 20 min ago
-    example: journalctl --since '20 min ago'
-
+    description: 'Show all messages from last '
+    example: journalctl -b -1
+    filters:
+      - linux
   - name: journalctl
-    description: Follow new messages
+    description: Delete journal logs which are older than 2 days
+    example: journalctl --vacuum-time={{2d}}
+    filters:
+      - linux
+  - name: journalctl
+    description: '[f]'
     example: journalctl -f
-
+    filters:
+      - linux
   - name: journalctl
-    description: Show only error, critical, and alert messages
-    example: journalctl -p err..alert
+    description: 'Show all messages by a specific '
+    example: journalctl -u {{unit}}
+    filters:
+      - linux
+  - name: journalctl
+    description: Filter messages within a time range (either timestamp or placeholders
+      like "yesterday")
+    example: journalctl --since {{now|today|yesterday|tomorrow}} --until {{YYYY-MM-DD
+      HH:MM:SS}}
+    filters:
+      - linux
+  - name: journalctl
+    description: Show all messages by a specific process
+    example: journalctl _PID={{pid}}
+    filters:
+      - linux
+  - name: journalctl
+    description: Show all messages by a specific executable
+    example: journalctl {{path/to/executable}}
+    filters:
+      - linux

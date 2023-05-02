@@ -1,14 +1,53 @@
 section: Group management
-
 commands:
   - name: groups
-    description: Show group membership
-
+    description: Print group memberships for the current user
+    example: groups
+  - name: groups
+    description: Print group memberships for a list of users
+    example: groups {{username1 username2 ...}}
   - name: groupadd
-    description: Add a new group
-
+    description: Create a new group
+    example: sudo groupadd {{group_name}}
+    filters:
+      - linux
+  - name: groupadd
+    description: Create a new system group
+    example: sudo groupadd --system {{group_name}}
+    filters:
+      - linux
+  - name: groupadd
+    description: Create a new group with the specific groupid
+    example: sudo groupadd --gid {{id}} {{group_name}}
+    filters:
+      - linux
   - name: groupdel
-    description: Delete a group
-
+    description: Delete an existing group
+    example: sudo groupdel {{group_name}}
+    filters:
+      - linux
   - name: gpasswd
-    description: Remove user from a group
+    description: Define group administrators
+    example: sudo gpasswd -A {{user1,user2}} {{group}}
+    filters:
+      - linux
+  - name: gpasswd
+    description: Set the list of group members
+    example: sudo gpasswd -M {{user1,user2}} {{group}}
+    filters:
+      - linux
+  - name: gpasswd
+    description: Create a password for the named group
+    example: gpasswd {{group}}
+    filters:
+      - linux
+  - name: gpasswd
+    description: Add a user to the named group
+    example: gpasswd -a {{user}} {{group}}
+    filters:
+      - linux
+  - name: gpasswd
+    description: Remove a user from the named group
+    example: gpasswd -d {{user}} {{group}}
+    filters:
+      - linux
