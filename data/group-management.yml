@@ -26,6 +26,16 @@ commands:
     example: sudo groupdel {{group_name}}
     filters:
       - linux
+  - name: groupmod
+    description: Change the group name
+    example: sudo groupmod --new-name {{new_group}} {{group_name}}
+    filters:
+      - linux
+  - name: groupmod
+    description: Change the group id
+    example: sudo groupmod --gid {{new_id}} {{group_name}}
+    filters:
+      - linux
   - name: gpasswd
     description: Define group administrators
     example: sudo gpasswd -A {{user1,user2}} {{group}}

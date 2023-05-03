@@ -1,0 +1,118 @@
+section: System settings
+commands:
+  - name: hostnamectl
+    description: Get the hostname of the computer
+    example: hostnamectl
+    filters:
+      - linux
+  - name: hostnamectl
+    description: Set the hostname of the computer
+    example: sudo hostnamectl set-hostname "{{hostname}}"
+    filters:
+      - linux
+  - name: hostnamectl
+    description: Set a pretty hostname for the computer
+    example: sudo hostnamectl set-hostname --static "{{hostname.example.com}}" &&
+      sudo hostnamectl set-hostname --pretty "{{hostname}}"
+    filters:
+      - linux
+  - name: hostnamectl
+    description: Reset hostname to its default value
+    example: sudo hostnamectl set-hostname --pretty ""
+    filters:
+      - linux
+  - name: localectl
+    description: Show the current settings of the system locale and keyboard mapping
+    example: localectl
+    filters:
+      - linux
+  - name: localectl
+    description: List available locales
+    example: localectl list-locales
+    filters:
+      - linux
+  - name: localectl
+    description: Set a system locale variable
+    example: localectl set-locale {{LANG}}={{en_US.UTF-8}}
+    filters:
+      - linux
+  - name: localectl
+    description: List available keymaps
+    example: localectl list-keymaps
+    filters:
+      - linux
+  - name: localectl
+    description: Set the system keyboard mapping for the console and X11
+    example: localectl set-keymap {{us}}
+    filters:
+      - linux
+  - name: systemctl
+    description: Show all running services
+    example: systemctl status
+    filters:
+      - linux
+  - name: systemctl
+    description: List failed units
+    example: systemctl --failed
+    filters:
+      - linux
+  - name: systemctl
+    description: Start/Stop/Restart/Reload a service
+    example: systemctl {{start|stop|restart|reload}} {{unit}}
+    filters:
+      - linux
+  - name: systemctl
+    description: Show the status of a unit
+    example: systemctl status {{unit}}
+    filters:
+      - linux
+  - name: systemctl
+    description: Enable/Disable a unit to be started on bootup
+    example: systemctl {{enable|disable}} {{unit}}
+    filters:
+      - linux
+  - name: systemctl
+    description: Mask/Unmask a unit to prevent enablement and manual activation
+    example: systemctl {{mask|unmask}} {{unit}}
+    filters:
+      - linux
+  - name: systemctl
+    description: Reload systemd, scanning for new or changed units
+    example: systemctl daemon-reload
+    filters:
+      - linux
+  - name: systemctl
+    description: Check if a unit is enabled
+    example: systemctl is-enabled {{unit}}
+    filters:
+      - linux
+  - name: timedatectl
+    description: Check the current system clock time
+    example: timedatectl
+    filters:
+      - linux
+  - name: timedatectl
+    description: Set the local time of the system clock directly
+    example: timedatectl set-time "{{yyyy-MM-dd hh:mm:ss}}"
+    filters:
+      - linux
+  - name: timedatectl
+    description: List available timezones
+    example: timedatectl list-timezones
+    filters:
+      - linux
+  - name: timedatectl
+    description: Set the system timezone
+    example: timedatectl set-timezone {{timezone}}
+    filters:
+      - linux
+  - name: timedatectl
+    description: Enable Network Time Protocol (NTP) synchronization
+    example: timedatectl set-ntp on
+    filters:
+      - linux
+  - name: timedatectl
+    description: Change the hardware clock time standard to localtime
+    example: timedatectl set-local-rtc 1
+    filters:
+      - linux

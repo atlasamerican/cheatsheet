@@ -1,0 +1,44 @@
+section: Filesystems
+commands:
+  - name: btrfs
+    description: Create subvolume
+    example: sudo btrfs subvolume create {{path/to/subvolume}}
+    filters:
+      - linux
+  - name: btrfs
+    description: List subvolumes
+    example: sudo btrfs subvolume list {{path/to/mount_point}}
+    filters:
+      - linux
+  - name: btrfs
+    description: Show space usage information
+    example: sudo btrfs filesystem df {{path/to/mount_point}}
+    filters:
+      - linux
+  - name: btrfs
+    description: Enable quota
+    example: sudo btrfs quota enable {{path/to/subvolume}}
+    filters:
+      - linux
+  - name: btrfs
+    description: Show quota
+    example: sudo btrfs qgroup show {{path/to/subvolume}}
+    filters:
+      - linux
+  - name: fsck
+    description: Check filesystem /dev/sdXN, reporting any damaged blocks
+    example: sudo fsck {{/dev/sdXN}}
+    filters:
+      - linux
+  - name: fsck
+    description: Check filesystem /dev/sdXN, reporting any damaged blocks and interactively
+      letting the user choose to repair each one
+    example: sudo fsck -r {{/dev/sdXN}}
+    filters:
+      - linux
+  - name: fsck
+    description: Check filesystem /dev/sdXN, reporting any damaged blocks and automatically
+      repairing them
+    example: sudo fsck -a {{/dev/sdXN}}
+    filters:
+      - linux

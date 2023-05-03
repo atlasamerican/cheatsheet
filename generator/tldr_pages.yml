@@ -1,25 +1,69 @@
 - section: User management
   pages: 
-    - path: linux/adduser.md
+    - path: linux/useradd.md
+    - path: linux/userdel.md
+    - path: linux/usermod.md
 
 - section: Group management
   pages:
     - path: common/groups.md
     - path: linux/groupadd.md
     - path: linux/groupdel.md
+    - path: linux/groupmod.md
     - path: linux/gpasswd.md
 
 - section: Package management
   pages:
     - path: linux/dnf.md
       filters: [rpm]
+    - path: linux/rpm.md
+      filters: [rpm]
     - path: linux/pacman.md
       filters: [pacman]
+    - path: linux/makepkg.md
+      filters: [pacman]
+    - path: linux/dpkg.md
+      filters: [deb]
+    - path: linux/apt-get.md
+      filters: [deb]
 
 - section: Log files
   pages:
     - path: linux/journalctl.md
+    - path: linux/dmesg.md
 
 - section: Networking
   pages:
     - path: linux/ip.md
+    - path: linux/firewall-cmd.md
+
+- section: Device management
+  pages:
+    - path: linux/hdparm.md
+    - path: linux/lsblk.md
+
+- section: Filesystems
+  pages:
+    - path: linux/btrfs.md
+    - path: linux/fsck.md
+
+- section: File management
+  pages:
+    - path: linux/atool.md
+    - path: linux/dd.md
+
+- section: System information
+  pages:
+    - path: linux/free.md
+    - path: linux/iostat.md
+    - path: linux/lscpu.md
+    - path: linux/sensors.md
+    - path: linux/top.md
+    - path: linux/uname.md
+
+- section: System settings
+  pages:
+    - path: linux/hostnamectl.md
+    - path: linux/localectl.md
+    - path: linux/systemctl.md
+    - path: linux/timedatectl.md

@@ -1,28 +1,79 @@
 section: User management
 commands:
-  - name: adduser
-    description: Create a new user with a default home directory and prompt the user
-      to set a password
-    example: adduser {{username}}
+  - name: useradd
+    description: Create a new user
+    example: sudo useradd {{username}}
     filters:
       - linux
-  - name: adduser
-    description: Create a new user without a home directory
-    example: adduser --no-create-home {{username}}
+  - name: useradd
+    description: Create a new user with the specified user id
+    example: sudo useradd --uid {{id}} {{username}}
     filters:
       - linux
-  - name: adduser
-    description: Create a new user with a home directory at the specified path
-    example: adduser --home {{path/to/home}} {{username}}
+  - name: useradd
+    description: Create a new user with the specified shell
+    example: sudo useradd --shell {{path/to/shell}} {{username}}
     filters:
       - linux
-  - name: adduser
-    description: Create a new user with the specified shell set as the login shell
-    example: adduser --shell {{path/to/shell}} {{username}}
+  - name: useradd
+    description: Create a new user belonging to additional groups (mind the lack of
+      whitespace)
+    example: sudo useradd --groups {{group1,group2,...}} {{username}}
     filters:
       - linux
-  - name: adduser
-    description: Create a new user belonging to the specified group
-    example: adduser --ingroup {{group}} {{username}}
+  - name: useradd
+    description: Create a new user with the default home directory
+    example: sudo useradd --create-home {{username}}
+    filters:
+      - linux
+  - name: useradd
+    description: Create a new user with the home directory filled by template directory
+      files
+    example: sudo useradd --skel {{path/to/template_directory}} --create-home {{username}}
+    filters:
+      - linux
+  - name: useradd
+    description: Create a new system user without the home directory
+    example: sudo useradd --system {{username}}
+    filters:
+      - linux
+  - name: userdel
+    description: Remove a user
+    example: sudo userdel {{username}}
+    filters:
+      - linux
+  - name: userdel
+    description: Remove a user in other root directory
+    example: sudo userdel --root {{path/to/other/root}} {{username}}
+    filters:
+      - linux
+  - name: userdel
+    description: Remove a user along with the home directory and mail spool
+    example: sudo userdel --remove {{username}}
+    filters:
+      - linux
+  - name: usermod
+    description: Change a username
+    example: sudo usermod --login {{new_username}} {{username}}
+    filters:
+      - linux
+  - name: usermod
+    description: Change a user id
+    example: sudo usermod --uid {{id}} {{username}}
+    filters:
+      - linux
+  - name: usermod
+    description: Change a user shell
+    example: sudo usermod --shell {{path/to/shell}} {{username}}
+    filters:
+      - linux
+  - name: usermod
+    description: Add a user to supplementary groups (mind the lack of whitespace)
+    example: sudo usermod --append --groups {{group1,group2,...}} {{username}}
+    filters:
+      - linux
+  - name: usermod
+    description: Change a user home directory
+    example: sudo usermod --move-home --home {{path/to/new_home}} {{username}}
     filters:
       - linux

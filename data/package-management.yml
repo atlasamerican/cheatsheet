@@ -48,6 +48,55 @@ commands:
     filters:
       - rpm
       - linux
+  - name: rpm
+    description: Show version of httpd package
+    example: rpm --query {{httpd}}
+    filters:
+      - rpm
+      - linux
+  - name: rpm
+    description: List versions of all matching packages
+    example: rpm --query --all '{{mariadb*}}'
+    filters:
+      - rpm
+      - linux
+  - name: rpm
+    description: Forcibly install a package regardless of currently installed versions
+    example: rpm --upgrade {{package_name.rpm}} --force
+    filters:
+      - rpm
+      - linux
+  - name: rpm
+    description: Identify owner of a file and show version of the package
+    example: rpm --query --file {{/etc/postfix/main.cf}}
+    filters:
+      - rpm
+      - linux
+  - name: rpm
+    description: List package-owned files
+    example: rpm --query --list {{kernel}}
+    filters:
+      - rpm
+      - linux
+  - name: rpm
+    description: Show scriptlets from an RPM file
+    example: rpm --query --package --scripts {{package_name.rpm}}
+    filters:
+      - rpm
+      - linux
+  - name: rpm
+    description: Show changed, missing and/or incorrectly installed files of matching
+      packages
+    example: rpm --verify --all '{{php-*}}'
+    filters:
+      - rpm
+      - linux
+  - name: rpm
+    description: Display the changelog of a specific package
+    example: rpm --query --changelog {{package_name}}
+    filters:
+      - rpm
+      - linux
   - name: pacman
     description: Synchronize and update all packages
     example: sudo pacman -Syu
@@ -96,4 +145,133 @@ commands:
     example: sudo pacman -Scc
     filters:
       - pacman
+      - linux
+  - name: makepkg
+    description: Make a package
+    example: makepkg
+    filters:
+      - pacman
+      - linux
+  - name: makepkg
+    description: Make a package and install its dependencies
+    example: makepkg --syncdeps
+    filters:
+      - pacman
+      - linux
+  - name: makepkg
+    description: Make a package, install its dependencies then install it to the system
+    example: makepkg --syncdeps --install
+    filters:
+      - pacman
+      - linux
+  - name: makepkg
+    description: Make a package, but skip checking the source's hashes
+    example: makepkg --skipchecksums
+    filters:
+      - pacman
+      - linux
+  - name: makepkg
+    description: Clean up work directories after a successful build
+    example: makepkg --clean
+    filters:
+      - pacman
+      - linux
+  - name: makepkg
+    description: Verify the hashes of the sources
+    example: makepkg --verifysource
+    filters:
+      - pacman
+      - linux
+  - name: makepkg
+    description: Generate and save the source information into .SRCINFO
+    example: makepkg --printsrcinfo > .SRCINFO
+    filters:
+      - pacman
+      - linux
+  - name: dpkg
+    description: Install a package
+    example: dpkg -i {{path/to/file.deb}}
+    filters:
+      - deb
+      - linux
+  - name: dpkg
+    description: Remove a package
+    example: dpkg -r {{package_name}}
+    filters:
+      - deb
+      - linux
+  - name: dpkg
+    description: List installed packages
+    example: dpkg -l {{pattern}}
+    filters:
+      - deb
+      - linux
+  - name: dpkg
+    description: List a package's contents
+    example: dpkg -L {{package_name}}
+    filters:
+      - deb
+      - linux
+  - name: dpkg
+    description: List contents of a local package file
+    example: dpkg -c {{path/to/file.deb}}
+    filters:
+      - deb
+      - linux
+  - name: dpkg
+    description: Find out which package owns a file
+    example: dpkg -S {{filename}}
+    filters:
+      - deb
+      - linux
+  - name: apt-get
+    description: Update the list of available packages and versions (it's recommended
+      to run this before other apt-get commands)
+    example: apt-get update
+    filters:
+      - deb
+      - linux
+  - name: apt-get
+    description: Install a package, or update it to the latest available version
+    example: apt-get install {{package}}
+    filters:
+      - deb
+      - linux
+  - name: apt-get
+    description: Remove a package
+    example: apt-get remove {{package}}
+    filters:
+      - deb
+      - linux
+  - name: apt-get
+    description: Remove a package and its configuration files
+    example: apt-get purge {{package}}
+    filters:
+      - deb
+      - linux
+  - name: apt-get
+    description: Upgrade all installed packages to their newest available versions
+    example: apt-get upgrade
+    filters:
+      - deb
+      - linux
+  - name: apt-get
+    description: Clean the local repository - removing package files (.deb) from interrupted
+      downloads that can no longer be downloaded
+    example: apt-get autoclean
+    filters:
+      - deb
+      - linux
+  - name: apt-get
+    description: Remove all packages that are no longer needed
+    example: apt-get autoremove
+    filters:
+      - deb
+      - linux
+  - name: apt-get
+    description: Upgrade installed packages (like upgrade), but remove obsolete packages
+      and install additional packages to meet new dependencies
+    example: apt-get dist-upgrade
+    filters:
+      - deb
       - linux

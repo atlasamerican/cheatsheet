@@ -1,0 +1,81 @@
+section: Device management
+commands:
+  - name: hdparm
+    description: Request the identification info of a given device
+    example: sudo hdparm -I /dev/{{device}}
+    filters:
+      - linux
+  - name: hdparm
+    description: Get the Advanced Power Management level
+    example: sudo hdparm -B /dev/{{device}}
+    filters:
+      - linux
+  - name: hdparm
+    description: Set the Advanced Power Management value (values 1-127 permit spin-down,
+      and values 128-254 do not)
+    example: sudo hdparm -B {{1}} /dev/{{device}}
+    filters:
+      - linux
+  - name: hdparm
+    description: Display the device's current power mode status
+    example: sudo hdparm -C /dev/{{device}}
+    filters:
+      - linux
+  - name: hdparm
+    description: Force a drive to immediately enter standby mode (usually causes a
+      drive to spin down)
+    example: sudo hdparm -y /dev/{{device}}
+    filters:
+      - linux
+  - name: hdparm
+    description: Put the drive into idle (low-power) mode, also setting its standby
+      timeout
+    example: sudo hdparm -S {{standby_timeout}} {{device}}
+    filters:
+      - linux
+  - name: hdparm
+    description: Test the read speed of a specific device
+    example: sudo hdparm -tT {{device}}
+    filters:
+      - linux
+  - name: lsblk
+    description: List all storage devices in a tree-like format
+    example: lsblk
+    filters:
+      - linux
+  - name: lsblk
+    description: Also list empty devices
+    example: lsblk -a
+    filters:
+      - linux
+  - name: lsblk
+    description: Print the SIZE column in bytes rather than in a human-readable format
+    example: lsblk -b
+    filters:
+      - linux
+  - name: lsblk
+    description: Output info about filesystems
+    example: lsblk -f
+    filters:
+      - linux
+  - name: lsblk
+    description: Use ASCII characters for tree formatting
+    example: lsblk -i
+    filters:
+      - linux
+  - name: lsblk
+    description: Output info about block-device topology
+    example: lsblk -t
+    filters:
+      - linux
+  - name: lsblk
+    description: Exclude the devices specified by the comma-separated list of major
+      device numbers
+    example: lsblk -e {{1,7}}
+    filters:
+      - linux
+  - name: lsblk
+    description: Display a customized summary using a comma-separated list of columns
+    example: lsblk --output {{NAME}},{{SERIAL}},{{MODEL}},{{TRAN}},{{TYPE}},{{SIZE}},{{FSTYPE}},{{MOUNTPOINT}}
+    filters:
+      - linux

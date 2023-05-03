@@ -40,3 +40,41 @@ commands:
     example: ip route add default via {{ip}} dev {{interface}}
     filters:
       - linux
+  - name: firewall-cmd
+    description: View the available firewall zones
+    example: firewall-cmd --get-active-zones
+    filters:
+      - linux
+  - name: firewall-cmd
+    description: View the rules which are currently applied
+    example: firewall-cmd --list-all
+    filters:
+      - linux
+  - name: firewall-cmd
+    description: Permanently move the interface into the block zone, effectively blocking
+      all communication
+    example: firewall-cmd --permanent --zone={{block}} --change-interface={{enp1s0}}
+    filters:
+      - linux
+  - name: firewall-cmd
+    description: Permanently open the port for a service in the specified zone (like
+      port 443 when in the public zone)
+    example: firewall-cmd --permanent --zone={{public}} --add-service={{https}}
+    filters:
+      - linux
+  - name: firewall-cmd
+    description: Permanently close the port for a service in the specified zone (like
+      port 80 when in the public zone)
+    example: firewall-cmd --permanent --zone={{public}} --remove-service={{http}}
+    filters:
+      - linux
+  - name: firewall-cmd
+    description: Permanently open two arbitrary ports in the specified zone
+    example: firewall-cmd --permanent --zone={{public}} --add-port={{25565/tcp}} --add-port={{19132/udp}}
+    filters:
+      - linux
+  - name: firewall-cmd
+    description: Reload firewalld to force rule changes to take effect
+    example: firewall-cmd --reload
+    filters:
+      - linux

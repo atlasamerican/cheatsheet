@@ -1,0 +1,155 @@
+section: System information
+commands:
+  - name: free
+    description: Display system memory
+    example: free
+    filters:
+      - linux
+  - name: free
+    description: Display memory in Bytes/KB/MB/GB
+    example: free -{{b|k|m|g}}
+    filters:
+      - linux
+  - name: free
+    description: Display memory in human-readable units
+    example: free -h
+    filters:
+      - linux
+  - name: free
+    description: Refresh the output every 2 seconds
+    example: free -s {{2}}
+    filters:
+      - linux
+  - name: iostat
+    description: Display a report of CPU and disk statistics since system startup
+    example: iostat
+    filters:
+      - linux
+  - name: iostat
+    description: Display a report of CPU and disk statistics with units converted
+      to megabytes
+    example: iostat -m
+    filters:
+      - linux
+  - name: iostat
+    description: Display CPU statistics
+    example: iostat -c
+    filters:
+      - linux
+  - name: iostat
+    description: Display disk statistics with disk names (including LVM)
+    example: iostat -N
+    filters:
+      - linux
+  - name: iostat
+    description: Display extended disk statistics with disk names for device "sda"
+    example: iostat -xN {{sda}}
+    filters:
+      - linux
+  - name: iostat
+    description: Display incremental reports of CPU and disk statistics every 2 seconds
+    example: iostat {{2}}
+    filters:
+      - linux
+  - name: lscpu
+    description: Display information about all CPUs
+    example: lscpu
+    filters:
+      - linux
+  - name: lscpu
+    description: Display information in a table
+    example: lscpu --extended
+    filters:
+      - linux
+  - name: lscpu
+    description: Display only information about offline CPUs in a table
+    example: lscpu --extended --offline
+    filters:
+      - linux
+  - name: sensors
+    description: Show the current readings of all sensor chips
+    example: sensors
+    filters:
+      - linux
+  - name: sensors
+    description: Show temperatures in degrees Fahrenheit
+    example: sensors --fahrenheit
+    filters:
+      - linux
+  - name: top
+    description: Start top
+    example: top
+    filters:
+      - linux
+  - name: top
+    description: Do not show any idle or zombie processes
+    example: top -i
+    filters:
+      - linux
+  - name: top
+    description: Show only processes owned by given user
+    example: top -u {{username}}
+    filters:
+      - linux
+  - name: top
+    description: Sort processes by a field
+    example: top -o {{field_name}}
+    filters:
+      - linux
+  - name: top
+    description: Show the individual threads of a given process
+    example: top -Hp {{process_id}}
+    filters:
+      - linux
+  - name: top
+    description: Show only the processes with the given PID(s), passed as a comma-separated
+      list. (Normally you wouldn't know PIDs off hand. This example picks the PIDs
+      from the process name)
+    example: top -p $(pgrep -d ',' {{process_name}})
+    filters:
+      - linux
+  - name: top
+    description: Get help about interactive commands
+    example: '?'
+    filters:
+      - linux
+  - name: uname
+    description: Print all information
+    example: uname --all
+    filters:
+      - linux
+  - name: uname
+    description: Print the current kernel name
+    example: uname --kernel-name
+    filters:
+      - linux
+  - name: uname
+    description: Print the current network node host name
+    example: uname --nodename
+    filters:
+      - linux
+  - name: uname
+    description: Print the current kernel release
+    example: uname --kernel-release
+    filters:
+      - linux
+  - name: uname
+    description: Print the current kernel version
+    example: uname --kernel-version
+    filters:
+      - linux
+  - name: uname
+    description: Print the current machine hardware name
+    example: uname --machine
+    filters:
+      - linux
+  - name: uname
+    description: Print the current processor type
+    example: uname --processor
+    filters:
+      - linux
+  - name: uname
+    description: Print the current operating system name
+    example: uname --operating-system
+    filters:
+      - linux

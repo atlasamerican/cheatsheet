@@ -9,3 +9,7 @@ rpm:
 pacman:
   os: linux
   distros: [arch]
+
+deb:
+  os: linux
+  distros: [debian, ubuntu]

@@ -1,0 +1,62 @@
+section: File management
+commands:
+  - name: atool
+    description: List files in a zip archive
+    example: atool --list {{path/to/archive.zip}}
+    filters:
+      - linux
+  - name: atool
+    description: Unpack a tar.gz archive into a new subdirectory (or current directory
+      if it contains only one file)
+    example: atool --extract {{path/to/archive.tar.gz}}
+    filters:
+      - linux
+  - name: atool
+    description: Create a new 7zip archive with two files
+    example: atool --add {{path/to/archive.7z}} {{path/to/file1 path/to/file2 ...}}
+    filters:
+      - linux
+  - name: atool
+    description: Extract all zip and rar archives in the current directory
+    example: atool --each --extract {{*.zip *.rar}}
+    filters:
+      - linux
+  - name: dd
+    description: Make a bootable USB drive from an isohybrid file (such like archlinux-xxx.iso)
+      and show the progress
+    example: dd if={{path/to/file.iso}} of={{/dev/usb_drive}} status=progress
+    filters:
+      - linux
+  - name: dd
+    description: Clone a drive to another drive with 4 MiB block, ignore error and
+      show the progress
+    example: dd if={{/dev/source_drive}} of={{/dev/dest_drive}} bs={{4M}} conv={{noerror}}
+      status=progress
+    filters:
+      - linux
+  - name: dd
+    description: Generate a file of 100 random bytes by using kernel random driver
+    example: dd if=/dev/urandom of={{path/to/random_file}} bs={{100}} count={{1}}
+    filters:
+      - linux
+  - name: dd
+    description: Benchmark the write performance of a disk
+    example: dd if=/dev/zero of={{path/to/file_1GB}} bs={{1024}} count={{1000000}}
+    filters:
+      - linux
+  - name: dd
+    description: Generate a system backup into an IMG file and show the progress
+    example: dd if={{/dev/drive_device}} of={{path/to/file.img}} status=progress
+    filters:
+      - linux
+  - name: dd
+    description: Restore a drive from an IMG file and show the progress
+    example: dd if={{path/to/file.img}} of={{/dev/drive_device}} status=progress
+    filters:
+      - linux
+  - name: dd
+    description: Check the progress of an ongoing dd operation (run this command from
+      another shell)
+    example: kill -USR1 $(pgrep ^dd)
+    filters:
+      - linux
