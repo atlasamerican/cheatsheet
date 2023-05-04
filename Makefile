@@ -34,4 +34,7 @@ generate:
 	python generator/tldr.py
 	$(call validate)
 
-.PHONY: debug install uninstall clean validate generate
+test:
+	go test
+
+.PHONY: debug install uninstall clean validate generate test
