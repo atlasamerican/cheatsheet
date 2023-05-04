@@ -54,6 +54,25 @@ func (r *Pager[T]) handleCommand(cmd string) {
 			r.update()
 		}
 		r.setFocus(r.focus - 1)
+	case "nextPage":
+		if r.end == r.last {
+			break
+		}
+		if len(r.pageStart) <= r.page {
+			r.pageStart = append(r.pageStart, r.start)
+		}
+		r.page++
+		r.start = r.end + 1
+		r.update()
+		r.setFocus(r.start)
+	case "prevPage":
+		if r.start == 0 {
+			break
+		}
+		r.page--
+		r.start = r.pageStart[r.page]
+		r.update()
+		r.setFocus(r.start)
 	case "view":
 		switch r.name {
 		case PAGER_SECTION:
