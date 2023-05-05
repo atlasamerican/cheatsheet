@@ -43,8 +43,16 @@ type Archive[T TldrPage | Dataset] struct {
 	path       string
 	zipPath    string
 	revPath    string
+	updatePath string
 	lang       string
 	updating   chan bool
+}
+
+func exists(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
 
 func newTldrArchive(path string) *Archive[TldrPage] {
@@ -86,12 +94,16 @@ func newDataArchive(path string) *Archive[Dataset] {
 }
 
 func (a *Archive[T]) init() {
+	if exists(a.updatePath) {
+		os.Rename(a.updatePath, a.zipPath)
+	}
+
 	a.updating <- true
 
 	go func() {
 		ok, rev, rrev := a.checkUpdate()
 		if ok {
-			if ok, err := a.update(); err != nil {
+			if ok, err := a.getUpdate(); err != nil {
 				if !ok {
 					log.Fatal(err)
 				}
@@ -178,7 +190,7 @@ func (a *Archive[T]) checkUpdate() (bool, string, string) {
 	return false, "", ""
 }
 
-func (a *Archive[T]) update() (bool, error) {
+func (a *Archive[T]) getUpdate() (bool, error) {
 	debugLogger.Log("[archive] updating %s", a.zipPath)
 
 	res, err := http.Get(a.remoteUrl + a.remotePath)
@@ -196,7 +208,7 @@ func (a *Archive[T]) update() (bool, error) {
 		log.Fatal(err)
 	}
 
-	file, err := os.Create(a.zipPath)
+	file, err := os.Create(a.updatePath)
 	if err != nil {
 		return false, err
 	}
@@ -224,13 +236,19 @@ func (a *Archive[T]) update() (bool, error) {
 	return true, nil
 }
 
-func (a *Archive[T]) getPage(name string) (*TldrPage, error) {
-	a.waitForUpdate()
-
+func (a *Archive[T]) getArchive() *zip.ReadCloser {
+	if !exists(a.zipPath) {
+		a.waitForUpdate()
+	}
 	archive, err := zip.OpenReader(a.zipPath)
 	if err != nil {
 		log.Fatal(err)
 	}
+	return archive
+}
+
+func (a *Archive[T]) getPage(name string) (*TldrPage, error) {
+	archive := a.getArchive()
 	defer archive.Close()
 
 	var pages string
@@ -261,12 +279,7 @@ func (a *Archive[T]) getPage(name string) (*TldrPage, error) {
 }
 
 func (a *Archive[T]) readData() ([]Command, map[string]Filter) {
-	a.waitForUpdate()
-
-	archive, err := zip.OpenReader(a.zipPath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	archive := a.getArchive()
 	defer archive.Close()
 
 	cmds := make([]Command, 0)
