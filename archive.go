@@ -46,6 +46,7 @@ type Archive[T TldrPage | Dataset] struct {
 	updatePath string
 	lang       string
 	updating   chan bool
+	updated    bool
 }
 
 func exists(path string) bool {
@@ -65,8 +66,10 @@ func newTldrArchive(path string) *Archive[TldrPage] {
 		path:       path,
 		zipPath:    filepath.Join(path, "tldr.zip"),
 		revPath:    filepath.Join(path, "tldr.zip.rev"),
+		updatePath: filepath.Join(path, "tldr.update.zip"),
 		lang:       "en",
 		updating:   make(chan bool, 1),
+		updated:    false,
 	}
 
 	a.init()
@@ -84,8 +87,10 @@ func newDataArchive(path string) *Archive[Dataset] {
 		path:       path,
 		zipPath:    filepath.Join(path, "data.zip"),
 		revPath:    filepath.Join(path, "data.zip.rev"),
+		updatePath: filepath.Join(path, "data.update.zip"),
 		lang:       "en",
 		updating:   make(chan bool, 1),
+		updated:    false,
 	}
 
 	a.init()
@@ -93,10 +98,14 @@ func newDataArchive(path string) *Archive[Dataset] {
 	return a
 }
 
-func (a *Archive[T]) init() {
+func (a *Archive[T]) installUpdate() {
 	if exists(a.updatePath) {
 		os.Rename(a.updatePath, a.zipPath)
 	}
+}
+
+func (a *Archive[T]) init() {
+	a.installUpdate()
 
 	a.updating <- true
 
@@ -110,18 +119,21 @@ func (a *Archive[T]) init() {
 				logger.Log("[error] %s: %v", a.name, err)
 			} else {
 				debugLogger.Log("[archive] %s: %s -> %s", a.name, rev, rrev)
+				a.updated = true
 			}
 		}
 		close(a.updating)
 	}()
 }
 
-func (a *Archive[T]) waitForUpdate() {
+func (a *Archive[T]) waitForUpdate() bool {
 	_, ok := <-a.updating
-	if !ok {
-		return
+	if ok {
+		<-a.updating
 	}
-	<-a.updating
+
+	a.installUpdate()
+	return a.updated
 }
 
 func (a *Archive[T]) getRemoteRev() (string, bool) {
