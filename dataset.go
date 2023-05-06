@@ -137,18 +137,30 @@ func readFiltersBuf(buf []byte, fs map[string]Filter) (map[string]Filter, error)
 	return fs, err
 }
 
-func newDataset(config Config) *Dataset {
+func newDataset(config Config) (*Dataset, chan bool) {
 	dataPath := config.dataPath
 	if dataPath == "" {
 		dataPath = config.appDirs.UserConfig()
 	}
 	archivePath := config.appDirs.UserData()
 
-	cmds, filters := newDataArchive(archivePath).readData()
+	dataArchive := newDataArchive(archivePath)
+	tldrArchive := newTldrArchive(archivePath)
+
+	updated := make(chan bool, 1)
+
+	go func() {
+		if dataArchive.waitForUpdate() || tldrArchive.waitForUpdate() {
+			updated <- true
+		}
+		close(updated)
+	}()
+
+	cmds, filters := dataArchive.readData()
 
 	ds := &Dataset{
 		sections: make(map[string]Section),
-		tldr:     newTldrArchive(archivePath),
+		tldr:     tldrArchive,
 		filters:  filters,
 	}
 
@@ -196,7 +208,7 @@ func newDataset(config Config) *Dataset {
 		ds.sections[cmd.Section] = s
 	}
 
-	return ds
+	return ds, updated
 }
 
 func (ds *Dataset) getPage(c Command) (*TldrPage, error) {
