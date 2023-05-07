@@ -188,6 +188,10 @@ func (r *Pager[T]) init() {
 	r.SetDrawFunc(func(_ tcell.Screen, _, _, _, _ int) (int, int, int, int) {
 		x, y, w, h := r.GetInnerRect()
 		r.draw(w, h)
+		colWidth := r.width / r.columnsN
+		for _, w := range r.widgets {
+			w.setWidth(colWidth)
+		}
 		return x, y, w, h
 	})
 }

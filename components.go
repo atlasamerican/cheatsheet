@@ -1,6 +1,8 @@
 package main
 
 import (
+	"unicode"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -10,6 +12,7 @@ type ComponentWidget[T Command | Section] interface {
 	focus(bool)
 	getData() T
 	getHeight() int
+	setWidth(int)
 }
 
 type BaseWidget struct {
@@ -26,9 +29,14 @@ func (w *BaseWidget) getHeight() int {
 	return w.height
 }
 
+func (w *BaseWidget) setWidth(width int) {
+}
+
 type CommandWidget struct {
 	*BaseWidget
-	data Command
+	data        Command
+	description *tview.TextView
+	example     *tview.TextView
 }
 
 type SectionWidget struct {
@@ -38,6 +46,29 @@ type SectionWidget struct {
 
 func (w *CommandWidget) getData() Command {
 	return w.data
+}
+
+func shortenText(str string, max int) string {
+	lastSpaceIx := -1
+	len := 0
+	for i, r := range str {
+		if unicode.IsSpace(r) {
+			lastSpaceIx = i
+		}
+		len++
+		if len >= max {
+			if lastSpaceIx != -1 {
+				return str[:lastSpaceIx] + "..."
+			}
+			return str[:max]
+		}
+	}
+	return str
+}
+
+func (w *CommandWidget) setWidth(width int) {
+	w.description.SetText("[yellow]" + shortenText(w.data.Description, width))
+	w.example.SetText(shortenText(w.data.Example, width))
 }
 
 func (c Command) widget() *CommandWidget {
@@ -75,6 +106,8 @@ func (c Command) widget() *CommandWidget {
 			flex.GetItemCount() + 1,
 		},
 		c,
+		descText,
+		examText,
 	}
 }
 
