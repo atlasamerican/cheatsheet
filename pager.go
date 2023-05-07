@@ -24,7 +24,7 @@ type Pager[T Section | Command] struct {
 	focus     int
 	page      int
 	pageStart []int
-	widgets   []*ComponentWidget[T]
+	widgets   []ComponentWidget[T]
 }
 
 func (r *Pager[T]) handleCommand(cmd string) {
@@ -76,10 +76,10 @@ func (r *Pager[T]) handleCommand(cmd string) {
 	case "view":
 		switch r.name {
 		case PAGER_SECTION:
-			s := any(r.widgets[r.focus].data).(Section)
+			s := any(r.widgets[r.focus].getData()).(Section)
 			r.ui.switchToCommandPager(s)
 		case PAGER_COMMAND:
-			c := any(r.widgets[r.focus].data).(Command)
+			c := any(r.widgets[r.focus].getData()).(Command)
 			r.ui.viewTldr(c)
 		}
 	case "back":
@@ -146,11 +146,11 @@ func (r *Pager[T]) update() {
 
 	var (
 		i int
-		w *ComponentWidget[T]
+		w ComponentWidget[T]
 	)
 
 	for i, w = range r.widgets[r.start:] {
-		height -= w.height
+		height -= w.getHeight()
 
 		if height < 1 ||
 			(r.ui.maxPerColumn > 0 && column.GetItemCount() == r.ui.maxPerColumn) {
@@ -164,7 +164,7 @@ func (r *Pager[T]) update() {
 			r.columns.AddItem(column, 0, 1, false)
 		}
 
-		column.AddItem(w, w.height, 1, false)
+		column.AddItem(w, w.getHeight(), 1, false)
 	}
 
 	r.end = r.start + i
@@ -199,7 +199,7 @@ func newSectionPager(ui *UI) *Pager[Section] {
 		name:    PAGER_SECTION,
 		ui:      ui,
 		columns: cols,
-		widgets: make([]*ComponentWidget[Section], len(ui.dataset.sections)),
+		widgets: make([]ComponentWidget[Section], len(ui.dataset.sections)),
 	}
 
 	i := 0
@@ -219,7 +219,7 @@ func newCommandPager(ui *UI, s Section) *Pager[Command] {
 		name:    PAGER_COMMAND,
 		ui:      ui,
 		columns: cols,
-		widgets: make([]*ComponentWidget[Command], len(s.Commands)),
+		widgets: make([]ComponentWidget[Command], len(s.Commands)),
 	}
 
 	for i, d := range s.Commands {

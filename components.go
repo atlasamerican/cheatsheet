@@ -5,18 +5,42 @@ import (
 	"github.com/rivo/tview"
 )
 
-type ComponentWidget[T Section | Command] struct {
+type ComponentWidget[T Command | Section] interface {
+	tview.Primitive
+	focus(bool)
+	getData() T
+	getHeight() int
+}
+
+type BaseWidget struct {
 	*tview.Flex
 	checkbox *tview.Checkbox
-	data     T
 	height   int
 }
 
-func (w *ComponentWidget[T]) focus(state bool) {
+func (w *BaseWidget) focus(state bool) {
 	w.checkbox.SetChecked(state)
 }
 
-func (c Command) widget() *ComponentWidget[Command] {
+func (w *BaseWidget) getHeight() int {
+	return w.height
+}
+
+type CommandWidget struct {
+	*BaseWidget
+	data Command
+}
+
+type SectionWidget struct {
+	*BaseWidget
+	data Section
+}
+
+func (w *CommandWidget) getData() Command {
+	return w.data
+}
+
+func (c Command) widget() *CommandWidget {
 	var (
 		flex     = tview.NewFlex().SetDirection(tview.FlexRow)
 		checkbox = tview.NewCheckbox().
@@ -44,15 +68,21 @@ func (c Command) widget() *ComponentWidget[Command] {
 		flex.AddItem(r, 0, 1, false)
 	}
 
-	return &ComponentWidget[Command]{
-		flex,
-		checkbox,
+	return &CommandWidget{
+		&BaseWidget{
+			flex,
+			checkbox,
+			flex.GetItemCount() + 1,
+		},
 		c,
-		flex.GetItemCount() + 1,
 	}
 }
 
-func (s Section) widget() *ComponentWidget[Section] {
+func (w *SectionWidget) getData() Section {
+	return w.data
+}
+
+func (s Section) widget() *SectionWidget {
 	var (
 		flex     = tview.NewFlex().SetDirection(tview.FlexColumn)
 		checkbox = tview.NewCheckbox().
@@ -66,10 +96,12 @@ func (s Section) widget() *ComponentWidget[Section] {
 	flex.AddItem(checkbox, 2, 1, false)
 	flex.AddItem(name, 0, 2, false)
 
-	return &ComponentWidget[Section]{
-		flex,
-		checkbox,
+	return &SectionWidget{
+		&BaseWidget{
+			flex,
+			checkbox,
+			flex.GetItemCount() + 1,
+		},
 		s,
-		flex.GetItemCount() + 1,
 	}
 }
